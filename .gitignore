@@ -1,0 +1,15 @@
+# Ignore everything
+/*
+
+# But don't ignore the code directory and gitignore
+!/code/
+!/.gitignore
+
+# Ignore common build/temp artifacts within code
+**/node_modules/
+**/target/
+**/dist/
+**/.idea/
+**/.vscode/
+**/*.log
+**/.DS_Store

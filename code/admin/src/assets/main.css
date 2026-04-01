@@ -1,0 +1,143 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Light Mode Tokens (Default) */
+  --admin-bg: #f8fafc;
+  --admin-surface: #ffffff;
+  --admin-surface-light: #f1f5f9;
+  --admin-primary: #10b981;
+  --admin-primary-glow: rgba(16, 185, 129, 0.1);
+  --admin-text-main: #0f172a;
+  --admin-text-secondary: #334155;
+  --admin-text-muted: #64748b;
+  --admin-border: #e2e8f0;
+  --admin-glass: rgba(255, 255, 255, 0.8);
+
+  --font-main: 'Fira Sans', -apple-system, sans-serif;
+  --font-data: 'Fira Code', monospace;
+
+  /* Element Plus Variable Mapping (Light) */
+  --el-color-primary: var(--admin-primary);
+  --el-bg-color: var(--admin-bg);
+  --el-bg-color-overlay: var(--admin-surface);
+  --el-text-color-primary: var(--admin-text-main);
+  --el-border-color-light: var(--admin-border);
+}
+
+html.dark {
+  /* OLED Dark Mode Tokens */
+  --admin-bg: #020617;
+  --admin-surface: #0f172a;
+  --admin-surface-light: #1e293b;
+  --admin-primary: #22c55e;
+  --admin-primary-glow: rgba(34, 197, 94, 0.2);
+  --admin-text-main: #f8fafc;
+  --admin-text-secondary: #cbd5e1;
+  --admin-text-muted: #94a3b8;
+  --admin-border: rgba(255, 255, 255, 0.08);
+  --admin-glass: rgba(15, 23, 42, 0.6);
+
+  /* Element Plus Variable Mapping (Dark/OLED) */
+  --el-bg-color: var(--admin-bg);
+  --el-bg-color-overlay: var(--admin-surface);
+  --el-text-color-primary: var(--admin-text-main);
+  --el-text-color-regular: var(--admin-text-secondary);
+  --el-border-color: var(--admin-border);
+  --el-border-color-light: var(--admin-border);
+  --el-border-color-lighter: var(--admin-border);
+  --el-fill-color-blank: var(--admin-surface);
+}
+
+/* Global resets */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--admin-bg);
+  color: var(--admin-text-main);
+  font-family: var(--font-main);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+#app {
+  height: 100vh;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--admin-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--admin-text-muted);
+  opacity: 0.3;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--admin-primary);
+}
+
+/* --- Global Element Plus Fixes --- */
+.el-card {
+  --el-card-bg-color: var(--admin-surface);
+  --el-card-border-color: var(--admin-border);
+  border-radius: 16px !important;
+  border: 1px solid var(--admin-border) !important;
+  background-color: var(--admin-surface) !important;
+  transition: all 0.3s;
+}
+
+.glass-card {
+  background: var(--admin-glass) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--admin-border) !important;
+  border-radius: 20px;
+}
+
+.el-table {
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: transparent;
+  --el-table-header-bg-color: var(--admin-surface-light);
+  --el-table-border-color: var(--admin-border);
+  background-color: transparent !important;
+}
+
+.el-input__wrapper {
+  background-color: var(--admin-surface-light) !important;
+  box-shadow: 0 0 0 1px var(--admin-border) inset !important;
+}
+
+.el-dialog {
+  --el-dialog-bg-color: var(--admin-surface);
+  background-color: var(--admin-surface) !important;
+  border-radius: 20px !important;
+  border: 1px solid var(--admin-border);
+}
+
+/* OLED Custom components */
+.oled-table-header {
+  background: var(--admin-surface-light) !important;
+}
+
+.oled-btn-primary {
+  background: var(--admin-primary) !important;
+  border-color: var(--admin-primary) !important;
+  color: #000 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px var(--admin-primary-glow);
+}
+
+.oled-btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* Utility */
+.text-data {
+  font-family: var(--font-data);
+}
