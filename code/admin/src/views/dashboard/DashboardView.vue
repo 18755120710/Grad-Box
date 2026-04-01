@@ -131,6 +131,9 @@ const dashboardStats = ref({
   projectCount: 0,
   consultationCount: 0,
   totalRevenue: 0,
+  userTrend: 0,
+  projectTrend: 0,
+  revenueTrend: 0,
   categoryStats: [] as any[],
   trafficData: { dates: [], values: [] } as any,
   recentActivities: [] as any[]
@@ -140,7 +143,7 @@ const statsConfig = computed(() => [
   { 
     title: '用户总数', 
     value: dashboardStats.value.userCount, 
-    trend: 12, 
+    trend: dashboardStats.value.userTrend, 
     icon: LucideUsers, 
     color: 'var(--admin-info)', 
     glow: 'rgba(59, 130, 246, 0.1)' 
@@ -148,7 +151,7 @@ const statsConfig = computed(() => [
   { 
     title: '物料库存', 
     value: dashboardStats.value.projectCount, 
-    trend: 4, 
+    trend: dashboardStats.value.projectTrend, 
     icon: LucideFiles, 
     color: 'var(--admin-success)', 
     glow: 'rgba(34, 197, 94, 0.1)' 
@@ -156,7 +159,7 @@ const statsConfig = computed(() => [
   { 
     title: '订单总额', 
     value: '￥' + (dashboardStats.value.totalRevenue || 0).toLocaleString(), 
-    trend: 8, 
+    trend: dashboardStats.value.revenueTrend, 
     icon: LucideConsult, 
     color: 'var(--admin-error)', 
     glow: 'rgba(236, 72, 153, 0.1)' 
