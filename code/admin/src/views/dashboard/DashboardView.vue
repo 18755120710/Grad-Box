@@ -127,9 +127,13 @@ onMounted(() => {
 const loading = ref(false)
 const timeRange = ref('7d')
 const dashboardStats = ref({
-  userCount: 12,
-  projectCount: 10,
-  consultationCount: 10
+  userCount: 0,
+  projectCount: 0,
+  consultationCount: 0,
+  totalRevenue: 0,
+  categoryStats: [] as any[],
+  trafficData: { dates: [], values: [] } as any,
+  recentActivities: [] as any[]
 })
 
 const statsConfig = computed(() => [
@@ -138,7 +142,7 @@ const statsConfig = computed(() => [
     value: dashboardStats.value.userCount, 
     trend: 12, 
     icon: LucideUsers, 
-    color: '#3b82f6', 
+    color: 'var(--admin-info)', 
     glow: 'rgba(59, 130, 246, 0.1)' 
   },
   { 
@@ -146,24 +150,20 @@ const statsConfig = computed(() => [
     value: dashboardStats.value.projectCount, 
     trend: 4, 
     icon: LucideFiles, 
-    color: '#22c55e', 
+    color: 'var(--admin-success)', 
     glow: 'rgba(34, 197, 94, 0.1)' 
   },
   { 
-    title: '待办咨询', 
-    value: dashboardStats.value.consultationCount, 
+    title: '订单总额', 
+    value: '￥' + (dashboardStats.value.totalRevenue || 0).toLocaleString(), 
     trend: 8, 
     icon: LucideConsult, 
-    color: '#ec4899', 
+    color: 'var(--admin-error)', 
     glow: 'rgba(236, 72, 153, 0.1)' 
   }
 ])
 
-const activityLogs = ref([
-  { id: 1, time: '14:20', user: 'Admin', action: '更新了项目', target: '高校就业系统V2' },
-  { id: 3, time: '11:50', user: 'Admin', action: '添加了分类', target: '移动端开发' },
-  { id: 4, time: '09:30', user: 'Security', action: '封禁异常IP', target: '182.12.89.*' }
-])
+const activityLogs = computed(() => dashboardStats.value.recentActivities)
 
 // --- Chart Options ---
 const trafficOption = computed(() => ({
@@ -178,7 +178,7 @@ const trafficOption = computed(() => ({
   xAxis: {
     type: 'category',
     boundaryGap: false,
-    data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    data: dashboardStats.value.trafficData.dates.length > 0 ? dashboardStats.value.trafficData.dates : ['-', '-', '-', '-', '-', '-', '-'],
     axisLine: { lineStyle: { color: isDark.value ? 'rgba(255,255,255,0.1)' : '#e2e8f0' } },
     axisLabel: { color: isDark.value ? '#94a3b8' : '#64748b' }
   },
@@ -189,11 +189,11 @@ const trafficOption = computed(() => ({
   },
   series: [
     {
-      name: '访问量',
+      name: '活跃度',
       type: 'line',
       smooth: true,
-      data: [120, 132, 101, 134, 90, 230, 210],
-      itemStyle: { color: '#22c55e' },
+      data: dashboardStats.value.trafficData.values.length > 0 ? dashboardStats.value.trafficData.values : [0, 0, 0, 0, 0, 0, 0],
+      itemStyle: { color: 'oklch(65% 0.15 150)' },
       areaStyle: {
         color: {
           type: 'linear',
@@ -208,43 +208,58 @@ const trafficOption = computed(() => ({
   ]
 }))
 
-const distributionOption = computed(() => ({
-  backgroundColor: 'transparent',
-  tooltip: { trigger: 'item' },
-  legend: { 
-    bottom: '5%', 
-    icon: 'circle', 
-    textStyle: { color: isDark.value ? '#94a3b8' : '#64748b' } 
-  },
-  series: [
-    {
-      name: '项目分布',
-      type: 'pie',
-      radius: ['40%', '70%'],
-      avoidLabelOverlap: false,
-      itemStyle: { 
-        borderRadius: 10, 
-        borderColor: isDark.value ? '#020617' : '#fff', 
-        borderWidth: 2 
-      },
-      label: { show: false },
-      data: [
-        { value: 1048, name: 'Web开发', itemStyle: { color: '#3b82f6' } },
-        { value: 735, name: '移动应用', itemStyle: { color: '#22c55e' } },
-        { value: 580, name: '人工智能', itemStyle: { color: '#eab308' } },
-        { value: 484, name: '大数据', itemStyle: { color: '#ec4899' } }
-      ]
-    }
+const distributionOption = computed(() => {
+  const chartColors = [
+    'oklch(60% 0.18 250)',
+    'oklch(65% 0.15 150)',
+    'oklch(75% 0.14 80)',
+    'oklch(65% 0.2 330)',
+    'oklch(70% 0.17 200)'
   ]
-}))
+  
+  return {
+    backgroundColor: 'transparent',
+    tooltip: { trigger: 'item' },
+    legend: { 
+      bottom: '5%', 
+      icon: 'circle', 
+      textStyle: { color: isDark.value ? '#94a3b8' : '#64748b' } 
+    },
+    series: [
+      {
+        name: '项目分布',
+        type: 'pie',
+        radius: ['40%', '70%'],
+        avoidLabelOverlap: false,
+        itemStyle: { 
+          borderRadius: 10, 
+          borderColor: isDark.value ? '#020617' : '#fff', 
+          borderWidth: 2 
+        },
+        label: { show: false },
+        data: dashboardStats.value.categoryStats.length > 0 
+          ? dashboardStats.value.categoryStats.map((item, index) => ({
+              ...item,
+              itemStyle: { color: chartColors[index % chartColors.length] }
+            }))
+          : [{ value: 0, name: '暂无数据' }]
+      }
+    ]
+  }
+})
 
 // --- Actions ---
 const loadData = async () => {
+  loading.value = true
   try {
     const res: any = await request.get('/api/admin/stats/overview')
-    if (res.data) dashboardStats.value = res.data
+    if (res.code === 200 && res.data) {
+      dashboardStats.value = res.data
+    }
   } catch (e) {
-    console.warn('Backend connection failed, using high-fidelity mock data.')
+    console.error('Failed to load dashboard stats:', e)
+  } finally {
+    loading.value = false
   }
 }
 </script>
@@ -289,8 +304,8 @@ const loadData = async () => {
   font-size: 11px;
   margin-top: 4px;
 }
-.stat-trend.up { color: var(--admin-primary); }
-.stat-trend.down { color: #ef4444; }
+.stat-trend.up { color: var(--admin-success); }
+.stat-trend.down { color: var(--admin-error); }
 
 .card-glow {
   position: absolute;
@@ -383,7 +398,7 @@ const loadData = async () => {
   align-items: center;
   gap: 8px;
   font-size: 11px;
-  color: var(--admin-primary);
+  color: var(--admin-success);
   background: var(--admin-primary-glow);
   padding: 4px 10px;
   border-radius: 20px;
@@ -394,7 +409,7 @@ const loadData = async () => {
 .pulse-dot {
   width: 6px;
   height: 6px;
-  background: var(--admin-primary);
+  background: var(--admin-success);
   border-radius: 50%;
   animation: pulse-small 2s infinite;
 }
