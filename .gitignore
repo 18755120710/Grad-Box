@@ -1,9 +1,10 @@
 # Ignore everything
 /*
 
-# But don't ignore the code directory and gitignore
+# But don't ignore the code directory, gitignore, and README
 !/code/
 !/.gitignore
+!/README.md
 
 # Ignore common build/temp artifacts within code
 **/node_modules/
