@@ -53,6 +53,28 @@ public class StatsController {
 
         stats.put("consultationCount", consultationService.count());
 
+        // 0. Calculate Trends (Simple: Current 7 days vs previous 7 days or just % of
+        // total)
+        LocalDate sevenDaysAgo = LocalDate.now().minusDays(7);
+        java.util.Date sevenDaysAgoDate = java.sql.Date.valueOf(sevenDaysAgo);
+
+        long newUsers = userService.count(new LambdaQueryWrapper<com.material.manaement.model.entity.User>()
+                .ge(com.material.manaement.model.entity.User::getCreateTime, sevenDaysAgoDate));
+        long totalUsers = (long) stats.get("userCount");
+        stats.put("userTrend", totalUsers > 0 ? (int) ((double) newUsers / totalUsers * 100) : 0);
+
+        long newProjects = projectService.count(new LambdaQueryWrapper<Project>()
+                .ge(Project::getCreateTime, sevenDaysAgoDate));
+        long totalProjects = (long) stats.get("projectCount");
+        stats.put("projectTrend", totalProjects > 0 ? (int) ((double) newProjects / totalProjects * 100) : 0);
+
+        Double newRevenue = orderService.list(new LambdaQueryWrapper<Order>()
+                .ge(Order::getStatus, 1)
+                .ge(Order::getCreateTime, sevenDaysAgoDate))
+                .stream().mapToDouble(Order::getTotalAmount).sum();
+        Double totalRev = (Double) stats.get("totalRevenue");
+        stats.put("revenueTrend", totalRev > 0 ? (int) (newRevenue / totalRev * 100) : 0);
+
         // 1. Category Distribution
         List<Category> categories = categoryService.list();
         List<Map<String, Object>> categoryStats = categories.stream().map(cat -> {
