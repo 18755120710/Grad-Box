@@ -1,5 +1,5 @@
 <template>
-  <div class="relative w-full h-[400px] lg:h-[500px] flex items-center justify-center perspective-1000 overflow-visible scale-90 lg:scale-100">
+  <div class="relative w-full h-[400px] lg:h-[500px] flex items-center justify-center perspective-1000 overflow-visible scale-90 lg:scale-100 translate-y-12 lg:translate-y-20">
     <!-- Background Glow System -->
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-primary/10 blur-[120px] rounded-full animate-pulse-slow"></div>
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-indigo-400/5 blur-[80px] rounded-full animate-float" style="animation-duration: 8s"></div>
@@ -16,7 +16,7 @@
         
         <!-- Content -->
         <div class="relative z-10 text-center space-y-3">
-            <div class="inline-flex px-3 py-1 rounded-full bg-primary/10 text-[9px] font-black uppercase tracking-[0.4em] text-primary mb-2">Platform</div>
+            <div class="inline-flex px-3 py-1 rounded-full bg-primary/10 text-[9px] font-black uppercase tracking-[0.4em] text-primary mb-2">技术平台 / Platform</div>
             <div class="text-5xl font-display italic text-profound-black uppercase leading-none tracking-tighter-profound">Grad</div>
             <div class="text-5xl font-display italic text-transparent bg-clip-text bg-gradient-to-r from-primary to-indigo-900 uppercase leading-none tracking-tighter-profound">Box</div>
         </div>
@@ -64,10 +64,10 @@ onMounted(() => {
 })
 
 const orbitItems = [
-  { icon: LucideCode, label: 'Full Stack', tag: 'Engineering' },
-  { icon: LucideCpu, label: 'AI / Models', tag: 'Algorithm' },
-  { icon: LucideGlobe, label: 'Web Design', tag: 'Creative' },
-  { icon: LucideLayers, label: 'Architecture', tag: 'System' }
+  { icon: LucideCode, label: '全栈开发', tag: '技术工程' },
+  { icon: LucideCpu, label: '人工智能', tag: '算法核心' },
+  { icon: LucideGlobe, label: '网页交互', tag: '视觉设计' },
+  { icon: LucideLayers, label: '分层架构', tag: '系统架构' }
 ]
 </script>
 
