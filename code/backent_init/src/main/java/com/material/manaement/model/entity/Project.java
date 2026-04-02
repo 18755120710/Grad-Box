@@ -45,6 +45,12 @@ public class Project implements Serializable {
     private java.util.List<ProjectMedia> medias;
 
     @TableField(exist = false)
+    private List<ProjectTechDetail> techDetails;
+
+    @TableField(exist = false)
+    private List<User> recentVisitors;
+
+    @TableField(exist = false)
     private String categoryName;
 
     private Date createTime;

@@ -27,5 +27,8 @@ public class Consultation implements Serializable {
     private String reply;
 
     private Date replyTime;
+    private Integer priority;
+    @TableField(exist = false)
+    private String projectTitle;
     private Date createTime;
 }

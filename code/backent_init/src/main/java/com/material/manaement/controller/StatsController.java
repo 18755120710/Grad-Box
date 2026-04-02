@@ -14,9 +14,8 @@ import com.material.manaement.model.entity.UserLog;
 import com.material.manaement.service.CategoryService;
 import com.material.manaement.service.UserLogService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
@@ -42,6 +41,13 @@ public class StatsController {
         private CategoryService categoryService;
         @Autowired
         private UserLogService userLogService;
+
+        @PostMapping("/visit")
+        public Result visit(@RequestBody(required = false) Map<String, Long> params, HttpServletRequest request) {
+                Long userId = params != null ? params.get("userId") : null;
+                userLogService.log(userId, "VISIT", "页面访问", request.getRemoteAddr());
+                return Result.success(null);
+        }
 
         @GetMapping("/overview")
         public Result overview() {
@@ -100,14 +106,14 @@ public class StatsController {
                         LocalDate date = LocalDate.now().minusDays(i);
                         dates.add(date.format(formatter));
 
-                        // DAU: Count unique user IDs for the day
+                        // DAU: Count unique IPs for the day
                         long dau = userLogService.list(new LambdaQueryWrapper<UserLog>()
                                         .ge(UserLog::getCreateTime, java.sql.Date.valueOf(date))
                                         .lt(UserLog::getCreateTime, java.sql.Date.valueOf(date.plusDays(1)))
-                                        .select(UserLog::getUserId))
+                                        .select(UserLog::getIp))
                                         .stream()
-                                        .filter(log -> log.getUserId() != null)
-                                        .map(UserLog::getUserId)
+                                        .filter(log -> log.getIp() != null)
+                                        .map(UserLog::getIp)
                                         .distinct()
                                         .count();
 

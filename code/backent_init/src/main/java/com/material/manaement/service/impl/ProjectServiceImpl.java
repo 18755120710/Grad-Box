@@ -19,6 +19,12 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
     private com.material.manaement.mapper.ProjectMediaMapper projectMediaMapper;
     @Autowired
     private com.material.manaement.mapper.CategoryMapper categoryMapper;
+    @Autowired
+    private com.material.manaement.mapper.ProjectTechDetailMapper projectTechDetailMapper;
+    @Autowired
+    private com.material.manaement.mapper.ProjectVisitMapper projectVisitMapper;
+    @Autowired
+    private com.material.manaement.mapper.UserMapper userMapper;
 
     @Override
     public IPage<Project> page(Page<Project> page, String keyword, String sort, Long categoryId, String techStack,
@@ -97,6 +103,34 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
                     new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<com.material.manaement.model.entity.ProjectMedia>()
                             .eq(com.material.manaement.model.entity.ProjectMedia::getProjectId, project.getId())
                             .orderByAsc(com.material.manaement.model.entity.ProjectMedia::getSortOrder)));
+
+            // Populate tech details
+            project.setTechDetails(projectTechDetailMapper.selectList(
+                    new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<com.material.manaement.model.entity.ProjectTechDetail>()
+                            .eq(com.material.manaement.model.entity.ProjectTechDetail::getProjectId, project.getId())
+                            .orderByAsc(com.material.manaement.model.entity.ProjectTechDetail::getSortOrder)));
+
+            // Populate recent visitors (Avatars)
+            List<com.material.manaement.model.entity.ProjectVisit> visits = projectVisitMapper.selectList(
+                    new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<com.material.manaement.model.entity.ProjectVisit>()
+                            .eq(com.material.manaement.model.entity.ProjectVisit::getProjectId, project.getId())
+                            .orderByDesc(com.material.manaement.model.entity.ProjectVisit::getCreateTime)
+                            .last("LIMIT 10"));
+
+            if (visits != null && !visits.isEmpty()) {
+                java.util.List<Long> userIds = visits.stream()
+                        .map(com.material.manaement.model.entity.ProjectVisit::getUserId)
+                        .filter(uid -> uid != null)
+                        .distinct()
+                        .collect(java.util.stream.Collectors.toList());
+                if (!userIds.isEmpty()) {
+                    project.setRecentVisitors(userMapper.selectBatchIds(userIds));
+                }
+            }
+
+            // Record visit (Async or simple) - actually update view_count
+            project.setViewCount((project.getViewCount() == null ? 0 : project.getViewCount()) + 1);
+            updateById(project);
         }
         return project;
     }

@@ -49,6 +49,7 @@ public class SecurityConfig {
                         .requestMatchers(AntPathRequestMatcher.antMatcher("/v3/api-docs/**")).permitAll()
                         .requestMatchers(AntPathRequestMatcher.antMatcher("/webjars/**")).permitAll()
                         .requestMatchers(AntPathRequestMatcher.antMatcher("/api/auth/**")).permitAll()
+                        .requestMatchers(AntPathRequestMatcher.antMatcher("/api/admin/stats/visit")).permitAll()
                         .requestMatchers(AntPathRequestMatcher.antMatcher("/api/projects/**")).permitAll()
                         .requestMatchers(AntPathRequestMatcher.antMatcher("/api/projects")).permitAll()
                         .requestMatchers(AntPathRequestMatcher.antMatcher("/api/categories/**")).permitAll()

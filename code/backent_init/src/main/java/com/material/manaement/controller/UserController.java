@@ -8,12 +8,43 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import com.material.manaement.service.ProjectHistoryService;
+import com.material.manaement.service.ConsultationService;
+import com.material.manaement.model.entity.ProjectHistory;
+import com.material.manaement.model.entity.Consultation;
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private ProjectHistoryService projectHistoryService;
+
+    @Autowired
+    private ConsultationService consultationService;
+
+    @GetMapping("/stats")
+    public Result getStats() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.getByUsername(username);
+        if (user == null) {
+            return Result.failed("用户不存在");
+        }
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("historyCount", projectHistoryService.count(
+                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<ProjectHistory>()
+                        .eq(ProjectHistory::getUserId, user.getId())));
+        stats.put("consultationCount", consultationService.count(
+                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<Consultation>()
+                        .eq(Consultation::getUserId, user.getId())));
+        stats.put("favoriteCount", 0); // Placeholder
+        return Result.success(stats);
+    }
 
     @GetMapping("/list")
     public Result list(@RequestParam(defaultValue = "1") Integer pageNum,

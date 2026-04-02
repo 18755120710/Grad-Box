@@ -12,6 +12,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.Map;
+import java.util.stream.Collectors;
+import com.material.manaement.model.entity.Project;
+import com.material.manaement.service.ProjectService;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/consultations")
@@ -20,6 +25,8 @@ public class ConsultationController {
     private ConsultationService consultationService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private ProjectService projectService;
 
     @PostMapping
     public Result create(@RequestBody Consultation consultation) {
@@ -52,8 +59,21 @@ public class ConsultationController {
     public Result allConsultations(@RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
         Page<Consultation> page = new Page<>(pageNum, pageSize);
-        return Result.success(consultationService.page(page,
-                new LambdaQueryWrapper<Consultation>().orderByDesc(Consultation::getCreateTime)));
+        Page<Consultation> result = consultationService.page(page,
+                new LambdaQueryWrapper<Consultation>().orderByDesc(Consultation::getPriority)
+                        .orderByDesc(Consultation::getCreateTime));
+
+        // Populate project titles
+        if (result.getRecords() != null && !result.getRecords().isEmpty()) {
+            List<Long> projectIds = result.getRecords().stream().map(Consultation::getProjectId).distinct()
+                    .collect(Collectors.toList());
+            Map<Long, String> projectMap = projectService.listByIds(projectIds).stream()
+                    .collect(Collectors.toMap(Project::getId, Project::getTitle));
+            result.getRecords().forEach(c -> {
+                c.setProjectTitle(projectMap.get(c.getProjectId()));
+            });
+        }
+        return Result.success(result);
     }
 
     @PutMapping("/{id}/status")
