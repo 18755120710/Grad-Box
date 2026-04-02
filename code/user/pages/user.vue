@@ -1,65 +1,69 @@
 <template>
-  <div class="min-h-screen bg-slate-50/50 pt-12 pb-24">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <!-- Premium User Header -->
-      <header class="relative mb-12 group">
-        <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-[40px] opacity-10 blur-3xl group-hover:opacity-20 transition-opacity"></div>
-        <div class="glass-card bg-white p-10 md:p-14 rounded-[48px] border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-10">
-          <div class="flex flex-col md:flex-row items-center gap-8">
-            <div class="relative">
-              <div class="absolute -inset-1 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full blur opacity-25"></div>
-              <el-avatar :size="100" :src="authStore.userInfo?.avatar || 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'" class="relative border-4 border-white shadow-xl" />
-            </div>
-            <div class="text-center md:text-left space-y-2">
-              <div class="flex items-center justify-center md:justify-start gap-3">
-                <h1 class="text-3xl font-black text-slate-900">{{ authStore.userInfo?.nickname || '尊敬的用户' }}</h1>
-                <span class="px-3 py-1 bg-blue-100 text-blue-600 text-[10px] font-black rounded-lg uppercase tracking-widest">VIP Member</span>
+  <div class="min-h-screen bg-slate-50/30 pt-12 pb-24 selection:bg-primary/10">
+    <div class="max-w-7xl mx-auto px-6 sm:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+        <!-- Integrated Sidebar (Pro Max V2) -->
+        <aside class="lg:col-span-3 space-y-6 lg:sticky lg:top-32 animate-fade-in-left">
+          <!-- User Profile Card -->
+          <div class="glass-premium p-8 rounded-[40px] border-white/40 shadow-2xl shadow-slate-200/40 group overflow-hidden relative">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-3xl -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-1000"></div>
+            
+            <div class="flex flex-col items-center text-center space-y-5 relative z-10">
+              <div class="relative group/avatar">
+                <div class="absolute -inset-1.5 bg-gradient-to-br from-primary via-indigo-400 to-indigo-600 rounded-full blur-[8px] opacity-20 group-hover/avatar:opacity-40 transition-opacity duration-700"></div>
+                <el-avatar :size="88" :src="authStore.userInfo?.avatar || 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'" 
+                           class="relative border-4 border-white shadow-xl scale-100 group-hover/avatar:scale-[1.02] transition-transform duration-700" />
               </div>
-              <p class="text-slate-400 font-bold flex items-center justify-center md:justify-start gap-2">
-                <LucideFingerprint :size="14" /> ID: GB-{{ authStore.userInfo?.id?.toString().padStart(6, '0') }}
-              </p>
+              
+              <div class="space-y-1">
+                <h1 class="text-xl font-display text-profound-black tracking-tighter uppercase italic leading-tight">{{ authStore.userInfo?.nickname || '尊敬的用户' }}</h1>
+                <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest flex items-center justify-center gap-1.5">
+                   ID: GB-{{ authStore.userInfo?.id?.toString().padStart(6, '0') }}
+                </p>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <span class="px-3 py-1 bg-primary/10 text-primary text-[8px] font-black rounded-full uppercase tracking-widest border border-primary/20">Elite Membership</span>
+              </div>
+            </div>
+
+            <!-- Mini Stats Grid -->
+            <div class="grid grid-cols-3 gap-4 pt-8 mt-8 border-t border-slate-100/60 relative z-10">
+              <div class="text-center group/stat">
+                <div class="text-lg font-display text-profound-black leading-none group-hover:text-primary transition-colors">{{ statistics.historyCount }}</div>
+                <div class="text-[7px] uppercase font-black text-slate-400 tracking-widest mt-1">History</div>
+              </div>
+              <div class="text-center group/stat">
+                <div class="text-lg font-display text-profound-black leading-none group-hover:text-primary transition-colors">{{ statistics.consultationCount }}</div>
+                <div class="text-[7px] uppercase font-black text-slate-400 tracking-widest mt-1">Inquiry</div>
+              </div>
+              <div class="text-center group/stat">
+                <div class="text-lg font-display text-primary leading-none">{{ statistics.favoriteCount }}</div>
+                <div class="text-[7px] uppercase font-black text-slate-400 tracking-widest mt-1">Saves</div>
+              </div>
             </div>
           </div>
 
-          <!-- Quick Stats -->
-          <div class="flex gap-4 md:gap-12">
-            <div class="text-center space-y-1">
-              <div class="text-3xl font-black text-slate-900 leading-none">15</div>
-              <div class="text-[10px] uppercase font-black text-slate-400 tracking-widest leading-none">浏览历史</div>
-            </div>
-            <div class="w-px h-10 bg-slate-100 hidden md:block"></div>
-            <div class="text-center space-y-1">
-              <div class="text-3xl font-black text-slate-900 leading-none">01</div>
-              <div class="text-[10px] uppercase font-black text-slate-400 tracking-widest leading-none">咨询工单</div>
-            </div>
-            <div class="w-px h-10 bg-slate-100 hidden md:block"></div>
-            <div class="text-center space-y-1">
-              <div class="text-3xl font-black text-blue-600 leading-none">12</div>
-              <div class="text-[10px] uppercase font-black text-slate-400 tracking-widest leading-none">收藏项目</div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div class="grid grid-cols-1 lg:grid-cols-4 gap-12 items-start">
-        <!-- Sidebar Navigation -->
-        <aside class="space-y-4">
-          <NuxtLink v-for="tab in tabs" :key="tab.to" :to="tab.to" 
-                    class="flex items-center gap-4 px-8 py-5 rounded-[24px] font-black transition-all duration-300 group"
-                    :class="route.path === tab.to ? 'bg-slate-900 text-white shadow-2xl shadow-slate-300 -translate-y-1' : 'bg-white text-slate-500 hover:bg-slate-50'">
-            <component :is="tab.icon" :size="20" class="group-hover:scale-110 transition-transform" />
-            {{ tab.text }}
-            <LucideChevronRight v-if="route.path === tab.to" :size="16" class="ml-auto" />
-          </NuxtLink>
-          
-          <button @click="handleLogout" class="w-full flex items-center gap-4 px-8 py-5 rounded-[24px] font-black text-red-500 hover:bg-red-50 transition-all">
-            <LucideLogOut :size="20" />
-            退出登录
-          </button>
+          <!-- Navigation Menu -->
+          <nav class="space-y-2">
+            <NuxtLink v-for="tab in tabs" :key="tab.to" :to="tab.to" 
+                      class="flex items-center gap-4 px-6 py-4 rounded-[24px] font-bold transition-all duration-500 group relative overflow-hidden"
+                      :class="route.path === tab.to ? 'bg-profound-black text-white shadow-xl shadow-primary/10 scale-[1.02]' : 'bg-white/60 backdrop-blur-md text-slate-500 hover:bg-white hover:text-profound-black border border-slate-100/50 hover:shadow-lg'">
+              <component :is="tab.icon" :size="16" class="group-hover:scale-110 transition-transform duration-500" 
+                         :class="route.path === tab.to ? 'text-primary' : 'text-slate-300'" />
+              <span class="text-[10px] uppercase tracking-profound">{{ tab.text }}</span>
+              <LucideChevronRight v-if="route.path === tab.to" :size="12" class="ml-auto opacity-40" />
+            </NuxtLink>
+            
+            <button @click="handleLogout" class="w-full flex items-center gap-4 px-6 py-4 rounded-[24px] font-bold text-red-500/70 hover:bg-red-50/50 transition-all text-[10px] uppercase tracking-profound mt-6">
+              <LucideLogOut :size="16" />
+              Sign Out
+            </button>
+          </nav>
         </aside>
 
-        <!-- Main Content area -->
-        <main class="lg:col-span-3 min-h-[60vh] animate-fade-in-up">
+        <!-- Main Content Area -->
+        <main class="lg:col-span-9 min-h-[70vh] animate-fade-in-up">
            <NuxtPage />
         </main>
       </div>
@@ -76,9 +80,15 @@ import {
 const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
+const api = useApi()
+
+// Fetch real statistics
+const { data: statsRes, refresh: refreshStats } = await useAsyncData('user-content-stats', () => api('/api/user/stats'))
+const statistics = computed(() => statsRes.value?.data || { historyCount: 0, consultationCount: 0, favoriteCount: 0 })
 
 onMounted(() => {
   authStore.fetchUserInfo()
+  refreshStats()
 })
 
 const tabs = [
