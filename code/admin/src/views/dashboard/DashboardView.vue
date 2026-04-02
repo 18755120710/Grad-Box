@@ -23,14 +23,14 @@
 
     <!-- Main Charts Row -->
     <el-row :gutter="24" class="charts-row">
-      <el-col :span="16">
+      <el-col :span="12">
         <div class="glass-card main-chart-card">
           <div class="card-header">
             <h4 class="card-title">业务流量态势 (实时)</h4>
             <div class="header-actions">
               <el-radio-group v-model="timeRange" size="small" class="oled-radio">
-                <el-radio-button label="24h">24小时</el-radio-button>
-                <el-radio-button label="7d">近7天</el-radio-button>
+                <el-radio-button label="24h">24h</el-radio-button>
+                <el-radio-button label="7d">7d</el-radio-button>
               </el-radio-group>
             </div>
           </div>
@@ -40,13 +40,24 @@
         </div>
       </el-col>
       
-      <el-col :span="8">
+      <el-col :span="6">
         <div class="glass-card sub-chart-card">
           <div class="card-header">
             <h4 class="card-title">资源分布比例</h4>
           </div>
           <div class="chart-container">
             <v-chart class="chart" :option="distributionOption" :theme="isDark ? 'dark' : 'light'" autoresize />
+          </div>
+        </div>
+      </el-col>
+
+      <el-col :span="6">
+        <div class="glass-card sub-chart-card">
+          <div class="card-header">
+            <h4 class="card-title">咨询状态分布</h4>
+          </div>
+          <div class="chart-container">
+            <v-chart class="chart" :option="consultationOption" :theme="isDark ? 'dark' : 'light'" autoresize />
           </div>
         </div>
       </el-col>
@@ -135,6 +146,7 @@ const dashboardStats = ref({
   projectTrend: 0,
   revenueTrend: 0,
   categoryStats: [] as any[],
+  consultationPie: [] as any[],
   trafficData: { dates: [], values: [] } as any,
   recentActivities: [] as any[]
 })
@@ -211,31 +223,71 @@ const trafficOption = computed(() => ({
   ]
 }))
 
-const distributionOption = computed(() => {
+const consultationOption = computed(() => {
   const chartColors = [
-    'oklch(60% 0.18 250)',
-    'oklch(65% 0.15 150)',
-    'oklch(75% 0.14 80)',
-    'oklch(65% 0.2 330)',
-    'oklch(70% 0.17 200)'
+    'oklch(65% 0.15 150)', // Success-ish
+    'oklch(60% 0.18 250)', // Info-ish
+    'oklch(65% 0.2 330)'   // Error-ish (for hidden? Or just variety)
   ]
   
   return {
     backgroundColor: 'transparent',
     tooltip: { trigger: 'item' },
     legend: { 
-      bottom: '5%', 
+      bottom: '2%', 
       icon: 'circle', 
-      textStyle: { color: isDark.value ? '#94a3b8' : '#64748b' } 
+      textStyle: { color: isDark.value ? '#94a3b8' : '#64748b', fontSize: 10 } 
     },
     series: [
       {
-        name: '项目分布',
+        name: '咨询状态',
         type: 'pie',
-        radius: ['40%', '70%'],
+        radius: ['35%', '60%'],
+        center: ['50%', '45%'],
         avoidLabelOverlap: false,
         itemStyle: { 
-          borderRadius: 10, 
+          borderRadius: 8, 
+          borderColor: isDark.value ? '#020617' : '#fff', 
+          borderWidth: 2 
+        },
+        label: { show: false },
+        data: dashboardStats.value.consultationPie.length > 0 
+          ? dashboardStats.value.consultationPie.map((item, index) => ({
+              ...item,
+              itemStyle: { color: chartColors[index % chartColors.length] }
+            }))
+          : [{ value: 0, name: '暂无数据' }]
+      }
+    ]
+  }
+})
+
+const distributionOption = computed(() => {
+  const chartColors = [
+    'oklch(65% 0.15 150)', // Success
+    'oklch(60% 0.18 250)', // Info
+    'oklch(65% 0.2 330)',  // Error
+    'oklch(75% 0.14 80)',  // Warning
+    'oklch(55% 0.18 200)'  // Indigo
+  ]
+  
+  return {
+    backgroundColor: 'transparent',
+    tooltip: { trigger: 'item' },
+    legend: { 
+      bottom: '2%', 
+      icon: 'circle', 
+      textStyle: { color: isDark.value ? '#94a3b8' : '#64748b', fontSize: 10 } 
+    },
+    series: [
+      {
+        name: '资源分布',
+        type: 'pie',
+        radius: ['35%', '60%'],
+        center: ['50%', '45%'],
+        avoidLabelOverlap: false,
+        itemStyle: { 
+          borderRadius: 8, 
           borderColor: isDark.value ? '#020617' : '#fff', 
           borderWidth: 2 
         },
@@ -324,6 +376,10 @@ const loadData = async () => {
 /* --- Charts Row --- */
 .charts-row { margin-bottom: 24px; }
 .chart-container { height: 350px; width: 100%; }
+
+.main-chart-card, .sub-chart-card {
+  padding: 24px;
+}
 
 .card-header {
   display: flex;
