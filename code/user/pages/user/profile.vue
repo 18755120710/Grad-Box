@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-12 animate-fade-in-up">
+  <div class="space-y-12">
     <!-- Header (Refined) -->
     <div class="flex items-center justify-between gap-6 pb-6 border-b border-slate-100">
       <div class="space-y-1">

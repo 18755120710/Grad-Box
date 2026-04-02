@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-10 animate-fade-in-up">
+  <div class="space-y-10">
     <div v-if="pending" class="flex flex-col items-center justify-center py-32 space-y-6">
       <div class="w-12 h-12 border-2 border-primary/10 border-t-primary rounded-full animate-spin"></div>
       <p class="text-[9px] font-black text-slate-400 uppercase tracking-profound animate-pulse">正在联络您的专属导师...</p>

@@ -59,7 +59,7 @@
         </aside>
 
         <!-- Main Content Area -->
-        <main class="lg:col-span-9 min-h-[70vh] animate-fade-in-up glass-premium p-8 md:p-12 rounded-[40px] border-white/40 shadow-2xl shadow-slate-200/40 relative overflow-hidden">
+        <main class="lg:col-span-9 min-h-[70vh] glass-premium p-8 md:p-12 rounded-[40px] border-white/40 shadow-2xl shadow-slate-200/40 relative overflow-hidden">
            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 to-indigo-600/50 opacity-20"></div>
            <NuxtPage />
         </main>

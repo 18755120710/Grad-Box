@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-10 animate-fade-in-up">
+  <div class="space-y-10">
     <div class="flex flex-col md:flex-row items-center justify-between gap-6 pb-2 border-b border-slate-100/50">
       <div class="flex p-1.5 bg-slate-100/50 border border-slate-200/50 rounded-2xl gap-1">
         <button v-for="tab in filterTabs" :key="tab.id"
