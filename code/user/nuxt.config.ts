@@ -18,9 +18,15 @@ export default defineNuxtConfig({
     head: {
       title: 'GradBox | 毕业设计展示与服务平台',
       link: [
-        { rel: 'icon', type: 'image/png', href: '/logo.png' }
+        { rel: 'icon', type: 'image/png', href: '/logo.png' },
+        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&family=Outfit:wght@100..900&display=swap' }
       ]
     },
     pageTransition: { name: 'page', mode: 'out-in' }
+  },
+  build: {
+    transpile: ['dayjs']
   }
 })
