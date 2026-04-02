@@ -54,11 +54,19 @@
               </ClientOnly>
             </template>
             <template v-else>
-              <div class="flex items-center gap-5">
-                <NuxtLink to="/login" class="text-[11px] font-black text-slate-400 hover:text-profound-black uppercase tracking-widest transition-all">登录/登录系统</NuxtLink>
-                <div class="w-px h-3 bg-slate-200"></div>
-                <NuxtLink to="/register" class="text-[11px] font-black text-slate-400 hover:text-profound-black uppercase tracking-widest transition-all">注册/立即加入</NuxtLink>
-              </div>
+              <ClientOnly>
+                <div class="flex items-center gap-5">
+                  <a @click.prevent="navigateTo('/login')" 
+                     class="text-[11px] font-black text-slate-400 hover:text-profound-black uppercase tracking-widest transition-all cursor-pointer select-none">
+                    登录
+                  </a>
+                  <div class="w-px h-3 bg-slate-200"></div>
+                  <a @click.prevent="navigateTo('/register')" 
+                     class="text-[11px] font-black text-slate-400 hover:text-profound-black uppercase tracking-widest transition-all cursor-pointer select-none">
+                    立即加入
+                  </a>
+                </div>
+              </ClientOnly>
             </template>
           </div>
         </div>
