@@ -54,8 +54,11 @@
               </ClientOnly>
             </template>
             <template v-else>
-              <NuxtLink to="/login" class="text-xs font-bold text-slate-400 uppercase tracking-profound hover:text-profound-black transition-colors">登录系统</NuxtLink>
-              <NuxtLink to="/register" class="btn-primary-filled px-8 py-3 text-[10px] font-black uppercase tracking-widest">立即加入</NuxtLink>
+              <div class="flex items-center gap-5">
+                <NuxtLink to="/login" class="text-[11px] font-black text-slate-400 hover:text-profound-black uppercase tracking-widest transition-all">登录/登录系统</NuxtLink>
+                <div class="w-px h-3 bg-slate-200"></div>
+                <NuxtLink to="/register" class="text-[11px] font-black text-slate-400 hover:text-profound-black uppercase tracking-widest transition-all">注册/立即加入</NuxtLink>
+              </div>
             </template>
           </div>
         </div>
