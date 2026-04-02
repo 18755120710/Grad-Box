@@ -203,6 +203,13 @@ const handleKeyDown = (e) => {
 }
 
 onMounted(() => {
+  // Visit Tracking for DAU
+  const api = useApi()
+  api('/api/admin/stats/visit', {
+    method: 'POST',
+    body: { userId: authStore.userInfo?.id }
+  }).catch(() => {})
+
   authStore.initialize()
   if (authStore.isLoggedIn) {
     authStore.fetchUserInfo()

@@ -32,6 +32,17 @@
 </template>
 
 <script setup>
+const authStore = useAuthStore()
+
+onMounted(() => {
+  // Visit Tracking for DAU
+  const api = useApi()
+  api('/api/admin/stats/visit', {
+    method: 'POST',
+    body: { userId: authStore.userInfo?.id }
+  }).catch(() => {})
+})
+
 // Using Crimson Pro for headings and Atkinson Hyperlegible for body
 useHead({
   link: [
