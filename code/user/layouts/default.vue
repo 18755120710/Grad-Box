@@ -54,19 +54,17 @@
               </ClientOnly>
             </template>
             <template v-else>
-              <ClientOnly>
-                <div class="flex items-center gap-5">
-                  <a @click.prevent="navigateTo('/login')" 
-                     class="text-[11px] font-black text-slate-400 hover:text-profound-black uppercase tracking-widest transition-all cursor-pointer select-none">
-                    登录
-                  </a>
-                  <div class="w-px h-3 bg-slate-200"></div>
-                  <a @click.prevent="navigateTo('/register')" 
-                     class="text-[11px] font-black text-slate-400 hover:text-profound-black uppercase tracking-widest transition-all cursor-pointer select-none">
-                    立即加入
-                  </a>
-                </div>
-              </ClientOnly>
+              <div class="flex items-center gap-5">
+                <a @click.prevent="navigateTo('/login')" 
+                   class="text-[11px] font-black text-slate-400 hover:text-profound-black uppercase tracking-widest transition-all cursor-pointer select-none">
+                  登录
+                </a>
+                <div class="w-px h-3 bg-slate-200"></div>
+                <a @click.prevent="navigateTo('/register')" 
+                   class="text-[11px] font-black text-slate-400 hover:text-profound-black uppercase tracking-widest transition-all cursor-pointer select-none">
+                  立即加入
+                </a>
+              </div>
             </template>
           </div>
         </div>
