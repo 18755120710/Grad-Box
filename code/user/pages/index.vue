@@ -30,8 +30,8 @@
           <div class="flex flex-col sm:flex-row items-center gap-10 pt-6">
             <NuxtLink to="/projects" class="group relative px-12 py-5 overflow-hidden rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-2xl shadow-primary/20">
               <div class="absolute inset-0 bg-primary group-hover:bg-profound-black transition-colors duration-500"></div>
-              <span class="relative z-10 text-white text-lg font-bold tracking-widest uppercase flex items-center gap-3">
-                开始探索项目 <LucideArrowRight :size="20" class="group-hover:translate-x-1 transition-transform" />
+              <span class="relative z-10 text-white text-lg font-bold tracking-widest uppercase flex items-center gap-3 whitespace-nowrap">
+                开始探索项目 <LucideArrowRight :size="40" class="group-hover:translate-x-1 transition-transform" />
               </span>
             </NuxtLink>
             
