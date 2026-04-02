@@ -18,7 +18,7 @@
 
     <div v-if="pending" class="flex flex-col items-center justify-center py-32 space-y-6">
       <div class="w-12 h-12 border-2 border-primary/10 border-t-primary rounded-full animate-spin"></div>
-      <p class="text-[9px] font-bold text-slate-400 uppercase tracking-profound animate-pulse">Retrieving your journey...</p>
+      <p class="text-[9px] font-black text-slate-400 uppercase tracking-profound animate-pulse">正在加载您的足迹...</p>
     </div>
 
     <div v-else-if="historyRecords.length === 0" class="py-32 text-center space-y-8">
@@ -27,10 +27,10 @@
         <LucideHistory :size="40" class="relative group-hover:text-primary transition-colors duration-500" />
       </div>
       <div class="space-y-3">
-        <h3 class="text-2xl font-display text-profound-black tracking-tighter uppercase italic">暂无历史 / Empty</h3>
-        <p class="text-slate-400 font-bold uppercase tracking-profound text-[10px]">Your browsing history will appear here</p>
+        <h3 class="text-2xl font-display text-profound-black tracking-tighter uppercase italic">暂无浏览历史 / EMPTY</h3>
+        <p class="text-slate-400 font-bold uppercase tracking-profound text-[9px]">您在 GradBox 探索的每一部作品都将记录于此</p>
       </div>
-      <NuxtLink to="/projects" class="btn-premium px-12 py-5 inline-flex">开始浏览项目 / EXPLORE</NuxtLink>
+      <NuxtLink to="/projects" class="btn-premium px-12 py-5 inline-flex font-black text-[10px]">继续探索项目</NuxtLink>
     </div>
 
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-start">

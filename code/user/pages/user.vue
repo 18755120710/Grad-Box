@@ -17,29 +17,29 @@
               
               <div class="space-y-1">
                 <h1 class="text-xl font-display text-profound-black tracking-tighter uppercase italic leading-tight">{{ authStore.userInfo?.nickname || '尊敬的用户' }}</h1>
-                <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest flex items-center justify-center gap-1.5">
-                   ID: GB-{{ authStore.userInfo?.id?.toString().padStart(6, '0') }}
+                <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest flex items-center justify-center gap-1.5 font-display">
+                   用户标识: GB-{{ authStore.userInfo?.id?.toString().padStart(6, '0') }}
                 </p>
               </div>
 
               <div class="flex items-center gap-2">
-                <span class="px-3 py-1 bg-primary/10 text-primary text-[8px] font-black rounded-full uppercase tracking-widest border border-primary/20">Elite Membership</span>
+                <span class="px-3 py-1 bg-primary/10 text-primary text-[8px] font-black rounded-full uppercase tracking-widest border border-primary/20">精英会员 / ELITE</span>
               </div>
             </div>
 
             <!-- Mini Stats Grid -->
             <div class="grid grid-cols-3 gap-4 pt-8 mt-8 border-t border-slate-100/60 relative z-10">
               <div class="text-center group/stat">
-                <div class="text-lg font-display text-profound-black leading-none group-hover:text-primary transition-colors">{{ statistics.historyCount }}</div>
-                <div class="text-[7px] uppercase font-black text-slate-400 tracking-widest mt-1">History</div>
+                <div class="text-lg font-display text-profound-black leading-none group-hover:text-primary transition-colors font-display">{{ statistics.historyCount }}</div>
+                <div class="text-[8px] font-black text-slate-400 tracking-widest mt-1">浏览历史</div>
               </div>
               <div class="text-center group/stat">
-                <div class="text-lg font-display text-profound-black leading-none group-hover:text-primary transition-colors">{{ statistics.consultationCount }}</div>
-                <div class="text-[7px] uppercase font-black text-slate-400 tracking-widest mt-1">Inquiry</div>
+                <div class="text-lg font-display text-profound-black leading-none group-hover:text-primary transition-colors font-display">{{ statistics.consultationCount }}</div>
+                <div class="text-[8px] font-black text-slate-400 tracking-widest mt-1">我的咨询</div>
               </div>
               <div class="text-center group/stat">
-                <div class="text-lg font-display text-primary leading-none">{{ statistics.favoriteCount }}</div>
-                <div class="text-[7px] uppercase font-black text-slate-400 tracking-widest mt-1">Saves</div>
+                <div class="text-lg font-display text-primary leading-none font-display">{{ statistics.favoriteCount }}</div>
+                <div class="text-[8px] font-black text-slate-400 tracking-widest mt-1">精选收藏</div>
               </div>
             </div>
           </div>
@@ -51,19 +51,20 @@
                       :class="route.path === tab.to ? 'bg-profound-black text-white shadow-xl shadow-primary/10 scale-[1.02]' : 'bg-white/60 backdrop-blur-md text-slate-500 hover:bg-white hover:text-profound-black border border-slate-100/50 hover:shadow-lg'">
               <component :is="tab.icon" :size="16" class="group-hover:scale-110 transition-transform duration-500" 
                          :class="route.path === tab.to ? 'text-primary' : 'text-slate-300'" />
-              <span class="text-[10px] uppercase tracking-profound">{{ tab.text }}</span>
+              <span class="text-[10px] uppercase font-black tracking-widest">{{ tab.text }}</span>
               <LucideChevronRight v-if="route.path === tab.to" :size="12" class="ml-auto opacity-40" />
             </NuxtLink>
             
             <button @click="handleLogout" class="w-full flex items-center gap-4 px-6 py-4 rounded-[24px] font-bold text-red-500/70 hover:bg-red-50/50 transition-all text-[10px] uppercase tracking-profound mt-6">
               <LucideLogOut :size="16" />
-              Sign Out
+              退出账户
             </button>
           </nav>
         </aside>
 
         <!-- Main Content Area -->
-        <main class="lg:col-span-9 min-h-[70vh] animate-fade-in-up">
+        <main class="lg:col-span-9 min-h-[70vh] animate-fade-in-up glass-premium p-8 md:p-12 rounded-[40px] border-white/40 shadow-2xl shadow-slate-200/40 relative overflow-hidden">
+           <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 to-indigo-600/50 opacity-20"></div>
            <NuxtPage />
         </main>
       </div>
@@ -74,7 +75,7 @@
 <script setup>
 import { 
   LucideFingerprint, LucideHistory, LucideMessageCircle, 
-  LucideUser, LucideLogOut, LucideChevronRight 
+  LucideUser, LucideLogOut, LucideChevronRight, LucideLayoutDashboard 
 } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
@@ -92,6 +93,7 @@ onMounted(() => {
 })
 
 const tabs = [
+  { text: '控制面板', to: '/user', icon: LucideLayoutDashboard },
   { text: '浏览历史', to: '/user/history', icon: LucideHistory },
   { text: '我的咨询', to: '/user/consultations', icon: LucideMessageCircle },
   { text: '个人资料', to: '/user/profile', icon: LucideUser }

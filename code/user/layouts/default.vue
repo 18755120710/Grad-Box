@@ -23,7 +23,7 @@
             <button @click="toggleSearch" 
                     class="flex items-center gap-3 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-slate-400 hover:bg-white hover:shadow-xl hover:shadow-slate-200/40 transition-all duration-500 group ml-4 relative">
               <LucideSearch :size="14" class="group-hover:text-primary transition-colors" />
-              <span class="text-[10px] font-bold uppercase tracking-widest">Search / ⌘K</span>
+              <span class="text-[10px] uppercase font-black tracking-widest">全局搜索 / ⌘K</span>
             </button>
           </div>
 
@@ -35,19 +35,19 @@
                     <el-avatar :size="36" :src="authStore.userInfo?.avatar || 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'" class="border-2 border-white shadow-sm" />
                     <div class="hidden sm:flex flex-col pr-4 gap-0.5">
                       <span class="text-[11px] font-bold text-profound-black uppercase tracking-wide leading-tight">{{ authStore.userInfo?.nickname || 'MEMBER' }}</span>
-                      <span class="text-[8px] font-black text-primary/60 uppercase tracking-widest leading-none">Elite Member</span>
+                      <span class="text-[8px] font-black text-primary/60 uppercase tracking-widest leading-none">精英会员</span>
                     </div>
                   </div>
                   <template #dropdown>
                     <el-dropdown-menu class="profound-dropdown">
                       <el-dropdown-item @click="navigateTo('/user')">
-                        <LucideLayoutDashboard :size="14" class="mr-2" /> 控制面板 / Dashboard
+                        <LucideLayoutDashboard :size="14" class="mr-2" /> 控制面板
                       </el-dropdown-item>
                       <el-dropdown-item @click="navigateTo('/user/profile')">
-                        <LucideUser :size="14" class="mr-2" /> 个人资料 / Profile
+                        <LucideUser :size="14" class="mr-2" /> 个人资料
                       </el-dropdown-item>
                       <el-dropdown-item divided @click="handleLogout" class="text-red-500 font-bold">
-                        <LucideLogOut :size="14" class="mr-2" /> 安全退出 / Logout
+                        <LucideLogOut :size="14" class="mr-2" /> 安全退出
                       </el-dropdown-item>
                     </el-dropdown-menu>
                   </template>
@@ -55,8 +55,8 @@
               </ClientOnly>
             </template>
             <template v-else>
-              <NuxtLink to="/login" class="text-xs font-bold text-slate-400 uppercase tracking-profound hover:text-profound-black transition-colors">Sign In</NuxtLink>
-              <NuxtLink to="/register" class="btn-primary-filled px-8 py-3 text-xs">Join Now</NuxtLink>
+              <NuxtLink to="/login" class="text-xs font-bold text-slate-400 uppercase tracking-profound hover:text-profound-black transition-colors">登录系统</NuxtLink>
+              <NuxtLink to="/register" class="btn-primary-filled px-8 py-3 text-[10px] font-black uppercase tracking-widest">立即加入</NuxtLink>
             </template>
           </div>
         </div>
@@ -79,14 +79,14 @@
             <input v-model="searchQuery"
                    @keyup.enter="handleSearch"
                    type="text"
-                   placeholder="Search Projects, TechStacks, Features..."
+                   placeholder="搜索案例、技术栈、核心功能..."
                    class="w-full pl-14 pr-6 py-6 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-primary/20 text-lg font-display text-profound-black placeholder:text-slate-300 transition-all shadow-inner"
                    autofocus />
           </div>
           <div class="flex items-center justify-between px-2">
             <div class="flex items-center gap-4 text-[9px] font-bold text-slate-300 uppercase tracking-profound">
-               <span class="flex items-center gap-1"><kbd class="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-400 text-[8px]">ENTER</kbd> TO SEARCH</span>
-               <span class="flex items-center gap-1"><kbd class="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-400 text-[8px]">ESC</kbd> TO CLOSE</span>
+               <span class="flex items-center gap-1"><kbd class="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-400 text-[8px]">ENTER</kbd> 确认搜索</span>
+               <span class="flex items-center gap-1"><kbd class="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-400 text-[8px]">ESC</kbd> 关闭面板</span>
             </div>
             <LucideArrowRight :size="14" class="text-primary animate-pulse" />
           </div>
@@ -163,8 +163,8 @@ const authStore = useAuthStore()
 const router = useRouter()
 
 const navLinks = [
-  { text: '门户首页 / HOME', to: '/' },
-  { text: '全部案例 / PROJECTS', to: '/projects' }
+  { text: '门户首页', to: '/' },
+  { text: '全部案例', to: '/projects' }
 ]
 
 const searchVisible = ref(false)

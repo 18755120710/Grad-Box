@@ -2,7 +2,7 @@
   <div class="space-y-10 animate-fade-in-up">
     <div v-if="pending" class="flex flex-col items-center justify-center py-32 space-y-6">
       <div class="w-12 h-12 border-2 border-primary/10 border-t-primary rounded-full animate-spin"></div>
-      <p class="text-[9px] font-bold text-slate-400 uppercase tracking-profound animate-pulse">Connecting with tutors...</p>
+      <p class="text-[9px] font-black text-slate-400 uppercase tracking-profound animate-pulse">正在联络您的专属导师...</p>
     </div>
 
     <div v-else-if="consultations.length === 0" class="py-32 text-center space-y-8">
@@ -11,10 +11,10 @@
         <LucideMessageSquareX :size="40" class="relative group-hover:text-primary transition-colors duration-500" />
       </div>
       <div class="space-y-3">
-        <h3 class="text-2xl font-display text-profound-black tracking-tighter uppercase italic">暂无咨询 / Message</h3>
-        <p class="text-slate-400 font-bold uppercase tracking-profound text-[10px]">Your consultation requests will appear here</p>
+        <h3 class="text-2xl font-display text-profound-black tracking-tighter uppercase italic">暂无咨询记录 / EMPTY</h3>
+        <p class="text-slate-400 font-bold uppercase tracking-profound text-[9px]">您的咨询申请与导师回复将显示在此处</p>
       </div>
-      <NuxtLink to="/projects" class="btn-premium px-12 py-5 inline-flex">发起新咨询 / NEW INQUIRY</NuxtLink>
+      <NuxtLink to="/projects" class="btn-premium px-12 py-5 inline-flex font-black text-[10px]">浏览项目并咨询</NuxtLink>
     </div>
 
     <div v-else class="space-y-16">
@@ -24,7 +24,7 @@
         <!-- User Inquiry Bubble (Pro Max V2) -->
         <div class="flex justify-start pr-8 md:pr-24">
           <div class="glass-premium p-6 md:p-8 rounded-[32px] rounded-bl-none shadow-2xl shadow-slate-200/40 max-w-2xl relative border-white/40">
-            <span class="absolute -top-3 left-6 px-3 py-1 bg-profound-black text-white text-[8px] font-black rounded-lg uppercase tracking-widest border border-white/10 ring-4 ring-white">MY REQUEST</span>
+            <span class="absolute -top-3 left-6 px-3 py-1 bg-profound-black text-white text-[8px] font-black rounded-lg uppercase tracking-widest border border-white/10 ring-4 ring-white">我的咨询请求</span>
             <p class="text-base font-display text-profound-black leading-snug italic opacity-90">{{ item.content }}</p>
             <div class="mt-4 flex items-center gap-3 text-[8px] font-black text-slate-300 uppercase tracking-widest border-t border-slate-50 pt-3">
                <span class="flex items-center gap-1"><LucideFingerprint :size="10" /> #{{ item.id }}</span>
@@ -46,14 +46,14 @@
                   <LucideUserCheck :size="16" />
                 </div>
                 <div class="space-y-0">
-                  <span class="text-[9px] font-display text-white italic uppercase tracking-widest">OFFICIAL MENTOR</span>
+                  <span class="text-[9px] font-display text-white italic uppercase tracking-widest">官方导师回复 / MENTOR</span>
                   <p class="text-[7px] font-black text-primary uppercase tracking-[0.2em] opacity-80">Academic Distinction Verified</p>
                 </div>
               </div>
               <p class="text-lg font-display text-white leading-tight italic text-glow-primary">{{ item.reply }}</p>
               <div class="flex justify-between items-center pt-5 border-t border-white/10 text-[8px] font-black text-white/30 uppercase tracking-widest">
-                 <span class="flex items-center gap-1"><LucideShieldCheck :size="10" class="text-primary/60" /> SECURE CHANNEL</span>
-                 <span class="px-2 py-0.5 bg-white/5 rounded-md border border-white/5">ARCHIVED</span>
+                 <span class="flex items-center gap-1"><LucideShieldCheck :size="10" class="text-primary/60" /> 安全加密通道</span>
+                 <span class="px-2 py-0.5 bg-white/5 rounded-md border border-white/5">已归档</span>
               </div>
             </div>
           </div>
@@ -63,7 +63,7 @@
         <div v-else class="flex justify-end pl-8 md:pl-24">
           <div class="px-8 py-5 glass-premium bg-slate-50/20 border-dashed border-slate-200/50 rounded-[28px] text-[9px] font-black text-slate-400 uppercase tracking-widest animate-pulse flex items-center gap-3">
             <div class="w-1.5 h-1.5 bg-primary rounded-full animate-ping"></div>
-            IN ANALYSIS · SENIOR TUTOR REVIWING
+            正在深度分析中 · 资深导师审核中
           </div>
         </div>
       </div>
