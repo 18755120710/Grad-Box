@@ -35,16 +35,15 @@
                     <el-avatar :size="36" :src="authStore.userInfo?.avatar || 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'" class="border-2 border-white shadow-sm" />
                     <div class="hidden sm:flex flex-col pr-4 gap-0.5">
                       <span class="text-[11px] font-bold text-profound-black uppercase tracking-wide leading-tight">{{ authStore.userInfo?.nickname || 'MEMBER' }}</span>
-                      <span class="text-[8px] font-black text-primary/60 uppercase tracking-widest leading-none">精英会员</span>
                     </div>
                   </div>
                   <template #dropdown>
                     <el-dropdown-menu class="profound-dropdown">
-                      <el-dropdown-item @click="navigateTo('/user')">
-                        <LucideLayoutDashboard :size="14" class="mr-2" /> 控制面板
-                      </el-dropdown-item>
                       <el-dropdown-item @click="navigateTo('/user/profile')">
                         <LucideUser :size="14" class="mr-2" /> 个人资料
+                      </el-dropdown-item>
+                      <el-dropdown-item @click="navigateTo('/user/history')">
+                        <LucideHistory :size="14" class="mr-2" /> 浏览历史
                       </el-dropdown-item>
                       <el-dropdown-item divided @click="handleLogout" class="text-red-500 font-bold">
                         <LucideLogOut :size="14" class="mr-2" /> 安全退出
@@ -156,7 +155,7 @@
 <script setup>
 import { 
   LucideUser, LucideLogOut, LucideArrowRight, 
-  LucideShieldCheck, LucideSearch, LucideLayoutDashboard 
+  LucideShieldCheck, LucideSearch 
 } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
