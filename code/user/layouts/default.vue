@@ -1,41 +1,53 @@
 <template>
-  <div class="min-h-screen bg-slate-50">
-    <!-- Navbar -->
-    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-bottom border-slate-100">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div class="min-h-screen bg-white transition-colors duration-1000 selection:bg-primary/10">
+    <!-- Navbar (Pro Max V2) -->
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-3xl border-b border-slate-200/40">
+      <div class="max-w-7xl mx-auto px-6 sm:px-10">
         <div class="flex justify-between h-20 items-center">
-          <NuxtLink to="/" class="flex items-center gap-2">
-            <div class="p-1 bg-white rounded-xl shadow-sm overflow-hidden">
-              <img src="/logo.png" alt="GradBox Logo" class="w-14 h-14 object-cover" />
+          <NuxtLink to="/" class="flex items-center gap-3 group">
+            <div class="p-1.5 bg-white rounded-2xl shadow-xl group-hover:scale-105 transition-all duration-700 overflow-hidden border border-slate-100">
+              <img src="/logo.png" alt="GradBox Logo" class="w-10 h-10 object-cover" />
             </div>
-            <span class="text-xl font-black text-slate-900 tracking-tight">GradBox</span>
+            <span class="text-xl font-display text-profound-black tracking-tighter uppercase italic">Grad<span class="text-primary italic not-italic font-black">Box</span></span>
           </NuxtLink>
 
-          <div class="hidden md:flex items-center gap-8">
+          <!-- Desktop Center Nav -->
+          <div class="hidden md:flex items-center gap-10">
             <NuxtLink v-for="link in navLinks" :key="link.to" :to="link.to" 
-                      class="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">
+                      class="text-xs font-bold text-slate-400 hover:text-profound-black tracking-profound uppercase transition-all flex items-center gap-2 group relative py-1">
               {{ link.text }}
+              <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-500 rounded-full"></span>
             </NuxtLink>
+            
+            <!-- Command Palette Trigger (UI-UX Pro Max) -->
+            <button @click="toggleSearch" 
+                    class="flex items-center gap-3 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-slate-400 hover:bg-white hover:shadow-xl hover:shadow-slate-200/40 transition-all duration-500 group ml-4 relative">
+              <LucideSearch :size="14" class="group-hover:text-primary transition-colors" />
+              <span class="text-[10px] font-bold uppercase tracking-widest">Search / ⌘K</span>
+            </button>
           </div>
 
-          <div class="flex items-center gap-4">
+          <div class="flex items-center gap-6">
             <template v-if="authStore.isLoggedIn">
               <ClientOnly>
                 <el-dropdown trigger="click">
-                  <div class="flex items-center gap-2 cursor-pointer p-1 pr-3 rounded-full hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
-                    <el-avatar :size="32" :src="authStore.userInfo?.avatar || 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'" />
-                    <span class="text-sm font-bold text-slate-700">{{ authStore.userInfo?.nickname || '用户' }}</span>
+                  <div class="flex items-center gap-3 cursor-pointer p-1 rounded-full bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-xl hover:shadow-slate-200/40 transition-all duration-700 group">
+                    <el-avatar :size="36" :src="authStore.userInfo?.avatar || 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'" class="border-2 border-white shadow-sm" />
+                    <div class="hidden sm:flex flex-col pr-4 gap-0.5">
+                      <span class="text-[11px] font-bold text-profound-black uppercase tracking-wide leading-tight">{{ authStore.userInfo?.nickname || 'MEMBER' }}</span>
+                      <span class="text-[8px] font-black text-primary/60 uppercase tracking-widest leading-none">Elite Member</span>
+                    </div>
                   </div>
                   <template #dropdown>
-                    <el-dropdown-menu class="w-48">
+                    <el-dropdown-menu class="profound-dropdown">
+                      <el-dropdown-item @click="navigateTo('/user')">
+                        <LucideLayoutDashboard :size="14" class="mr-2" /> 控制面板 / Dashboard
+                      </el-dropdown-item>
                       <el-dropdown-item @click="navigateTo('/user/profile')">
-                        <LucideUser :size="14" class="mr-2" /> 个人中心
+                        <LucideUser :size="14" class="mr-2" /> 个人资料 / Profile
                       </el-dropdown-item>
-                      <el-dropdown-item @click="navigateTo('/user/history')">
-                        <LucideHistory :size="14" class="mr-2" /> 浏览历史
-                      </el-dropdown-item>
-                      <el-dropdown-item divided @click="handleLogout">
-                        <LucideLogOut :size="14" class="mr-2" /> 退出登录
+                      <el-dropdown-item divided @click="handleLogout" class="text-red-500 font-bold">
+                        <LucideLogOut :size="14" class="mr-2" /> 安全退出 / Logout
                       </el-dropdown-item>
                     </el-dropdown-menu>
                   </template>
@@ -43,45 +55,99 @@
               </ClientOnly>
             </template>
             <template v-else>
-              <NuxtLink to="/login" class="text-sm font-bold text-slate-700 hover:text-blue-600 transition-colors">登录</NuxtLink>
-              <NuxtLink to="/register" class="px-5 py-2.5 bg-blue-600 text-white rounded-full text-sm font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all hover:scale-105 active:scale-95">免费注册</NuxtLink>
+              <NuxtLink to="/login" class="text-xs font-bold text-slate-400 uppercase tracking-profound hover:text-profound-black transition-colors">Sign In</NuxtLink>
+              <NuxtLink to="/register" class="btn-primary-filled px-8 py-3 text-xs">Join Now</NuxtLink>
             </template>
           </div>
         </div>
       </div>
     </nav>
+    
+    <!-- Search Command Palette (Pro Max) -->
+    <ClientOnly>
+      <el-dialog v-model="searchVisible" 
+                 :show-close="false"
+                 title="" 
+                 width="600px" 
+                 class="search-palette-dialog"
+                 destroy-on-close>
+        <div class="space-y-6 -mt-4">
+          <div class="relative group">
+            <div class="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
+              <LucideSearch :size="20" />
+            </div>
+            <input v-model="searchQuery"
+                   @keyup.enter="handleSearch"
+                   type="text"
+                   placeholder="Search Projects, TechStacks, Features..."
+                   class="w-full pl-14 pr-6 py-6 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-primary/20 text-lg font-display text-profound-black placeholder:text-slate-300 transition-all shadow-inner"
+                   autofocus />
+          </div>
+          <div class="flex items-center justify-between px-2">
+            <div class="flex items-center gap-4 text-[9px] font-bold text-slate-300 uppercase tracking-profound">
+               <span class="flex items-center gap-1"><kbd class="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-400 text-[8px]">ENTER</kbd> TO SEARCH</span>
+               <span class="flex items-center gap-1"><kbd class="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-400 text-[8px]">ESC</kbd> TO CLOSE</span>
+            </div>
+            <LucideArrowRight :size="14" class="text-primary animate-pulse" />
+          </div>
+        </div>
+      </el-dialog>
+    </ClientOnly>
 
     <!-- Main Content -->
-    <main class="page-container">
+    <main class="page-container relative z-10 pb-20">
       <slot />
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-slate-900 text-slate-400 py-16 mt-20">
-      <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-12">
-        <div class="col-span-1 md:col-span-2 space-y-6">
-          <div class="flex items-center gap-2 text-white">
-            <img src="/logo.png" alt="GradBox Logo" class="w-16 h-16 object-cover rounded-xl bg-white p-1" />
-            <span class="text-2xl font-black">GradBox</span>
+    <!-- Footer (Pro Max) -->
+    <footer class="bg-white border-t border-slate-100 py-32">
+      <div class="max-w-7xl mx-auto px-10 grid grid-cols-1 md:grid-cols-4 gap-24">
+        <div class="col-span-1 md:col-span-2 space-y-10">
+          <div class="flex items-center gap-3 text-profound-black">
+            <img src="/logo.png" alt="GradBox Logo" class="w-14 h-14 object-cover rounded-2xl bg-white shadow-xl p-1 border border-slate-50" />
+            <span class="text-3xl font-display tracking-tighter italic">Grad<span class="text-primary">Box</span></span>
           </div>
-          <p class="max-w-sm">专业的毕业设计案例展示与定制化服务平台，致力于为毕业生提供最高质量的毕业方案与全方位的技术指导。</p>
+          <p class="max-w-md text-slate-400 font-bold text-base leading-relaxed uppercase tracking-wide opacity-80 decoration-primary decoration-2">
+            追求卓越的毕业设计案例中枢。我们不仅提供源码，更提供深度思维与技术灵魂的闭环支持。
+          </p>
+          <div class="flex gap-4 pt-4">
+             <div v-for="i in 4" :key="i" class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 hover:text-primary transition-all cursor-pointer">
+                <LucideArrowRight :size="16" />
+             </div>
+          </div>
         </div>
         <div>
-          <h4 class="text-white font-bold mb-6">快速导航</h4>
-          <ul class="space-y-4">
+          <h4 class="text-profound-black font-display text-[10px] uppercase tracking-profound mb-12 italic border-b border-slate-50 pb-4 inline-block">资源中心 / Resources</h4>
+          <ul class="space-y-5">
             <li v-for="link in navLinks" :key="link.to">
-              <NuxtLink :to="link.to" class="hover:text-white transition-colors">{{ link.text }}</NuxtLink>
+              <NuxtLink :to="link.to" class="text-[11px] font-bold text-slate-400 hover:text-primary transition-all uppercase tracking-wide flex items-center gap-2 group">
+                <span class="w-1.5 h-1.5 rounded-full bg-slate-100 group-hover:bg-primary transition-colors"></span>
+                {{ link.text }}
+              </NuxtLink>
             </li>
           </ul>
         </div>
         <div>
-          <h4 class="text-white font-bold mb-6">联系我们</h4>
-          <p>客服热线: 400-XXX-XXXX</p>
-          <p>工作时间: 9:00 - 21:00</p>
+          <h4 class="text-profound-black font-display text-[10px] uppercase tracking-profound mb-12 italic border-b border-slate-50 pb-4 inline-block">即刻咨询 / Contact</h4>
+          <div class="space-y-8">
+            <div class="space-y-1">
+              <p class="text-2xl font-display text-profound-black tracking-tighter">400-888-GRAD</p>
+              <p class="text-[9px] font-bold text-slate-300 uppercase tracking-profound">Global Service Hotline</p>
+            </div>
+            <p class="text-slate-400 text-[10px] font-bold leading-loose uppercase tracking-wide">
+              卓越服务 · 终身质保<br />
+              <span class="text-slate-300">9:00 - 21:00 (Mon-Sun)</span>
+            </p>
+            <div class="pt-2">
+               <div class="w-14 h-14 rounded-3xl bg-primary/5 flex items-center justify-center text-primary border border-primary/10 shadow-inner">
+                  <LucideShieldCheck :size="28" />
+               </div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="max-w-7xl mx-auto px-4 mt-16 pt-8 border-t border-slate-800 text-sm text-center">
-        © 2024 GradBox. All rights reserved.
+      <div class="max-w-7xl mx-auto px-10 mt-32 pt-12 border-t border-slate-50 text-[9px] font-bold text-slate-300 uppercase tracking-profound text-center italic">
+        © 2024 <span class="text-profound-black">GradBox Intelligence</span>. Elevating Academic Excellence through Design.
       </div>
     </footer>
   </div>
@@ -89,30 +155,77 @@
 
 <script setup>
 import { 
-  LucideGraduationCap, LucideUser, LucideHistory, 
-  LucideLogOut, LucideChevronRight 
+  LucideUser, LucideLogOut, LucideArrowRight, 
+  LucideShieldCheck, LucideSearch, LucideLayoutDashboard 
 } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 const router = useRouter()
 
 const navLinks = [
-  { text: '全部项目', to: '/projects' },
-  { text: '定制服务', to: '/services' },
-  { text: '帮助中心', to: '/help' },
-  { text: '关于我们', to: '/about' }
+  { text: '门户首页 / HOME', to: '/' },
+  { text: '全部案例 / PROJECTS', to: '/projects' }
 ]
+
+const searchVisible = ref(false)
+const searchQuery = ref('')
+
+const toggleSearch = () => {
+  searchVisible.value = !searchVisible.value
+}
+
+const handleSearch = () => {
+  if (!searchQuery.value.trim()) return
+  navigateTo(`/projects?q=${encodeURIComponent(searchQuery.value.trim())}`)
+  searchVisible.value = false
+  searchQuery.value = ''
+}
 
 const handleLogout = () => {
   authStore.logout()
-  router.push('/login')
+  navigateTo('/login')
 }
 
-// Initialize store from localStorage on mount
+// Add ⌘K shortcut
+const handleKeyDown = (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault()
+    toggleSearch()
+  }
+}
+
 onMounted(() => {
   authStore.initialize()
   if (authStore.isLoggedIn) {
     authStore.fetchUserInfo()
   }
+  window.addEventListener('keydown', handleKeyDown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown)
 })
 </script>
+
+<style>
+.profound-dropdown {
+  border-radius: 24px !important;
+  padding: 8px !important;
+  border: 1px solid #f1f5f9 !important;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.08) !important;
+}
+.el-dropdown-menu__item {
+  border-radius: 12px !important;
+  padding: 10px 16px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  color: #64748b !important;
+}
+.el-dropdown-menu__item:hover {
+  background-color: #f8fafc !important;
+  color: #020617 !important;
+}
+</style>
+
