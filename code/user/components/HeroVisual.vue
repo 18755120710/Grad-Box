@@ -24,7 +24,7 @@
       
       <!-- Orbiting Elements -->
       <div v-for="(item, index) in orbitItems" :key="index" 
-           class="absolute top-[60%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full animate-orbit"
+           class="absolute top-[90%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full animate-orbit"
            :style="{ 
              animationDelay: `-${index * 3}s`, 
              '--orbit-radius': isMobile ? '140px' : '220px',

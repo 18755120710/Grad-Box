@@ -1,84 +1,13 @@
-<template>
-  <div class="min-h-screen flex items-center justify-center bg-slate-50 relative overflow-hidden">
-    <!-- Mesh Background -->
-    <div class="absolute inset-0 pointer-events-none opacity-40">
-      <div class="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-400/20 rounded-full blur-[120px] animate-float"></div>
-      <div class="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-400/20 rounded-full blur-[120px]"></div>
-    </div>
-
-    <div class="max-w-md w-full px-6 relative z-10 animate-fade-in-up">
-      <div class="glass-card bg-white/80 p-10 md:p-12 rounded-[48px] shadow-2xl shadow-blue-200/50 border border-white">
-        <div class="text-center space-y-4 mb-10">
-          <NuxtLink to="/" class="inline-flex items-center gap-2 mb-4 group">
-            <div class="p-1 bg-white rounded-2xl shadow-lg group-hover:scale-110 transition-transform overflow-hidden">
-              <img src="/logo.png" alt="GradBox Logo" class="w-16 h-16 object-cover" />
-            </div>
-            <span class="text-2xl font-black text-slate-900 tracking-tight">GradBox</span>
-          </NuxtLink>
-          <h2 class="text-3xl font-black text-slate-900 tracking-tight">欢迎回来</h2>
-          <p class="text-slate-400 font-bold text-xs uppercase tracking-widest leading-loose">
-            还没有账号?
-            <NuxtLink to="/register" class="text-blue-600 hover:text-indigo-600 underline underline-offset-4 decoration-2 transition-colors">
-              立即开启探索之旅
-            </NuxtLink>
-          </p>
-        </div>
-
-        <form class="space-y-8" @submit.prevent="handleLogin">
-          <div class="space-y-6">
-            <div class="group space-y-2">
-              <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">登录身份 / 用户名</label>
-              <div class="relative">
-                <LucideUser class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-600 transition-colors" :size="18" />
-                <input v-model="form.username" type="text" required
-                       class="w-full pl-14 pr-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-600 transition-all outline-none font-bold text-slate-800"
-                       placeholder="Username">
-              </div>
-            </div>
-            
-            <div class="group space-y-2">
-              <div class="flex justify-between items-center px-2">
-                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">访问密钥 / 密码</label>
-                <NuxtLink to="/help" class="text-[10px] font-black text-blue-600 hover:text-indigo-600 transition-colors">忘记密码?</NuxtLink>
-              </div>
-              <div class="relative">
-                <LucideLock class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-600 transition-colors" :size="18" />
-                <input v-model="form.password" type="password" required
-                       class="w-full pl-14 pr-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-600 transition-all outline-none font-bold text-slate-800"
-                       placeholder="Password">
-              </div>
-            </div>
-          </div>
-
-          <div v-if="errorMsg" class="p-4 bg-red-50 text-red-600 rounded-2xl text-xs font-bold text-center animate-shake">
-            <LucideAlertCircle class="inline-block mr-2" :size="14" /> {{ errorMsg }}
-          </div>
-
-          <button type="submit" :disabled="loading" class="btn-premium w-full py-5 text-xl font-black tracking-wide">
-            <LucideLogIn v-if="!loading" :size="24" />
-            <span v-else class="animate-spin inline-block w-6 h-6 border-4 border-white/30 border-t-white rounded-full"></span>
-            {{ loading ? '身份验证中...' : '立即登录' }}
-          </button>
-        </form>
-        
-        <div class="mt-12 pt-8 border-t border-slate-100 flex justify-center gap-6">
-           <div v-for="i in 3" :key="i" class="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 hover:text-blue-600 hover:border-blue-100 transition-all cursor-pointer">
-              <LucideGithub v-if="i===1" :size="20" />
-              <LucideTwitter v-if="i===2" :size="20" />
-              <LucideChrome v-if="i===3" :size="20" />
-           </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { 
-  LucideGraduationCap, LucideUser, LucideLock, 
-  LucideAlertCircle, LucideLogIn, LucideGithub, 
-  LucideTwitter, LucideChrome 
+  LucideUser, LucideLock, LucideAlertCircle, LucideLogIn, 
+  LucideGithub, LucideTwitter, LucideChrome, LucideGraduationCap
 } from 'lucide-vue-next'
+import { ElMessage } from 'element-plus'
+
+definePageMeta({
+  layout: 'auth'
+})
 
 const api = useApi()
 const authStore = useAuthStore()
@@ -102,26 +31,140 @@ const handleLogin = async () => {
     
     if (res.code === 200) {
       authStore.setToken(res.data.token, res.data.tokenHead)
+      ElMessage.success('欢迎回来')
       navigateTo('/')
     } else {
-      errorMsg.value = res.message || '凭据错误，请重试'
+      errorMsg.value = res.message || '身份验证失败'
     }
   } catch (e) {
     console.error('Login Error:', e)
-    errorMsg.value = '登录服务异常，请稍后再试'
+    errorMsg.value = '鉴权服务连接异常'
   } finally {
     loading.value = false
   }
 }
 </script>
 
+<template>
+  <div class="animate-fade-in-up">
+    <!-- Liquid Glass Card (Pro Max V2) -->
+    <div class="glass-container relative p-8 md:p-12 rounded-[2.5rem] border border-white/40 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] overflow-hidden group">
+      <!-- Sophisticated Glass Background -->
+      <div class="absolute inset-0 bg-white/60 backdrop-blur-2xl z-0"></div>
+      
+      <!-- Content Wrapper -->
+      <div class="relative z-10">
+        <!-- Logo & Brand Header -->
+        <div class="text-center space-y-8 mb-12">
+          <NuxtLink to="/" class="inline-flex flex-col items-center gap-4 group/logo">
+            <div class="relative">
+              <div class="absolute inset-0 bg-primary/20 blur-2xl rounded-full group-hover/logo:bg-primary/30 transition-all duration-700"></div>
+              <div class="relative w-20 h-20 bg-white rounded-3xl shadow-xl border border-slate-100 flex items-center justify-center p-2 group-hover/logo:scale-105 transition-all duration-700">
+                <img src="/logo.png" alt="GradBox Logo" class="w-full h-full object-contain rounded-2xl" />
+              </div>
+            </div>
+            <div class="space-y-1">
+              <span class="block text-4xl font-heading text-slate-900 tracking-tighter italic lowercase">Grad<span class="text-primary italic font-black">Box</span></span>
+              <div class="flex items-center justify-center gap-2">
+                <div class="h-[1px] w-4 bg-slate-200"></div>
+                <LucideGraduationCap :size="12" class="text-primary opacity-50" />
+                <div class="h-[1px] w-4 bg-slate-200"></div>
+              </div>
+            </div>
+          </NuxtLink>
+          
+          <div class="space-y-3">
+            <h1 class="text-4xl font-heading text-slate-900 tracking-tight leading-tight">欢迎回来<br/><span class="text-slate-400 font-light italic">Welcome Back</span></h1>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.25em] flex items-center justify-center gap-2">
+              <span>还没有账号?</span>
+              <NuxtLink to="/register" class="text-primary hover:text-slate-900 transition-all duration-300">开启探索之旅</NuxtLink>
+            </p>
+          </div>
+        </div>
+
+        <!-- Auth Form -->
+        <form class="space-y-8" @submit.prevent="handleLogin">
+          <div class="space-y-6">
+            <!-- Username Input -->
+            <div class="space-y-2 group/input">
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2">登录账户 / ACCOUNT</label>
+              <div class="relative">
+                <LucideUser class="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/input:text-primary transition-colors" :size="16" />
+                <input v-model="form.username" type="text" required
+                       class="w-full bg-white/40 border border-white/60 rounded-2xl pl-16 pr-6 py-5 text-sm focus:bg-white focus:border-primary/30 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.05)] outline-none transition-all placeholder:text-slate-300 text-slate-600 font-body"
+                       placeholder="Username / Email">
+              </div>
+            </div>
+            
+            <!-- Password Input -->
+            <div class="space-y-2 group/input">
+              <div class="flex justify-between items-center px-2">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">访问密钥 / SECRET</label>
+                <NuxtLink to="/help" class="text-[9px] font-bold text-primary hover:text-slate-900 transition-colors uppercase tracking-widest">忘记密码?</NuxtLink>
+              </div>
+              <div class="relative">
+                <LucideLock class="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/input:text-primary transition-colors" :size="16" />
+                <input v-model="form.password" type="password" required
+                       class="w-full bg-white/40 border border-white/60 rounded-2xl pl-16 pr-6 py-5 text-sm focus:bg-white focus:border-primary/30 focus:shadow-[0_0_0_4px_rgba(79,70,229,0.05)] outline-none transition-all placeholder:text-slate-300 text-slate-600 font-body"
+                       placeholder="Security Key">
+              </div>
+            </div>
+          </div>
+
+          <!-- Error Feedback -->
+          <div v-if="errorMsg" class="p-4 bg-red-50/50 backdrop-blur-md text-red-500 rounded-2xl text-[10px] font-bold text-center animate-shake border border-red-100/50 flex items-center justify-center gap-2 uppercase tracking-wide">
+            <LucideAlertCircle :size="14" /> {{ errorMsg }}
+          </div>
+
+          <!-- Action Button -->
+          <button type="submit" :disabled="loading" 
+                  class="group/btn relative w-full py-5 bg-primary text-white rounded-2xl overflow-hidden shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300">
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000"></div>
+            <div class="relative flex items-center justify-center gap-3">
+              <LucideLogIn v-if="!loading" :size="18" class="text-white" />
+              <span v-else class="animate-spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></span>
+              <span class="text-xs font-black uppercase tracking-[0.2em] font-body">{{ loading ? '正在验证...' : '确认进入系统' }}</span>
+            </div>
+          </button>
+        </form>
+        
+        <!-- Social Auth Divider -->
+        <div class="my-10 flex items-center gap-4">
+          <div class="h-px flex-grow bg-gradient-to-r from-transparent to-slate-100"></div>
+          <span class="text-[9px] font-bold text-slate-300 uppercase tracking-widest whitespace-nowrap">第三方快捷访问</span>
+          <div class="h-px flex-grow bg-gradient-to-l from-transparent to-slate-100"></div>
+        </div>
+
+        <!-- Social Icons -->
+        <div class="flex justify-center gap-6">
+           <div v-for="social in [{icon: LucideGithub, id: 1}, {icon: LucideTwitter, id: 2}, {icon: LucideChrome, id: 3}]" 
+                :key="social.id" 
+                class="w-14 h-14 rounded-2xl bg-white/40 border border-white/60 flex items-center justify-center text-slate-400 hover:text-primary hover:border-primary/20 hover:bg-white transition-all duration-500 cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-1 group/social">
+              <component :is="social.icon" :size="20" class="group-hover/social:scale-110 transition-transform duration-500" />
+           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
 <style scoped>
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
 }
 .animate-shake {
-  animation: shake 0.4s ease-in-out;
+  animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
+
+
 </style>
