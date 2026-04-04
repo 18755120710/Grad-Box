@@ -305,7 +305,7 @@ const handleSave = async () => {
   submitting.value = true
   try {
     if (isEdit.value) {
-      await request.put('/api/projects', form)
+      await request.put(`/api/projects/${form.id}`, form)
     } else {
       await request.post('/api/projects', form)
     }
