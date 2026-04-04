@@ -8,7 +8,7 @@
         </el-button>
       </div>
       <div class="header-main">
-        <h2 class="view-title">{{ isEdit ? '编辑项目资产' : '创建全新项目' }}</h2>
+        <h2 class="view-title">{{ isEdit ? '编辑项目资产' : '录入新资产' }}</h2>
         <div class="header-ops">
           <el-button class="oled-btn-outline" @click="$router.push('/projects')">放弃变更</el-button>
           <el-button type="primary" class="oled-btn-primary" @click="handleSave" :loading="submitting">
@@ -24,16 +24,19 @@
       <div class="panel-left">
         <div class="glass-card form-section">
           <div class="section-title">核心属性</div>
-          <el-form :model="form" label-position="top">
-            <el-form-item label="项目标题 (Title)">
-              <el-input v-model="form.name" placeholder="输入极具吸引力的项目名称..." class="large-input" />
+          <el-form :model="form" :rules="rules" ref="formRef" label-position="top">
+            <el-form-item label="项目标题 (Title)" prop="title">
+              <el-input v-model="form.title" placeholder="输入极具吸引力的项目名称..." class="large-input" />
             </el-form-item>
             
             <div class="row-flex">
-              <el-form-item label="所属分类" class="flex-1">
+              <el-form-item label="所属分类" prop="categoryId" class="flex-1">
                 <el-select v-model="form.categoryId" placeholder="选择分类路径" class="full-width">
                   <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
                 </el-select>
+              </el-form-item>
+              <el-form-item label="展示类型" class="flex-1">
+                <el-input v-model="form.type" placeholder="如: 全栈开发, 组件库" />
               </el-form-item>
               <el-form-item label="技术栈" class="flex-2">
                 <el-input v-model="form.techStack" placeholder="Vue3, SpringBoot, MyBatis..." />
@@ -53,14 +56,27 @@
         </div>
 
         <div class="glass-card form-section">
-          <div class="section-title">外部链路</div>
-          <div class="row-flex">
-            <el-form-item label="演示地址 (Demo)" class="flex-1">
-              <el-input v-model="form.demoUrl" placeholder="https://..." />
-            </el-form-item>
-            <el-form-item label="价格定位 (Amount)" class="flex-1">
-              <el-input-number v-model="form.price" :precision="2" :step="100" class="full-width" />
-            </el-form-item>
+          <div class="section-title">展示资源流 (Gallery & Media)</div>
+          <div class="media-section">
+            <div class="media-grid">
+              <div v-for="(media, index) in form.medias" :key="index" class="media-row">
+                <el-select v-model="media.type" style="width: 120px">
+                  <el-option label="展示图片" :value="1" />
+                  <el-option label="视频演示" :value="2" />
+                </el-select>
+                <el-input v-model="media.url" placeholder="媒体直链 URL (CDN)" />
+                <el-button circle plain type="danger" @click="removeMedia(index)" class="delete-media-btn">
+                  <lucide-trash-2 :size="14" />
+                </el-button>
+              </div>
+              <div v-if="form.medias.length === 0" class="empty-media">
+                <lucide-layers :size="24" />
+                <span>暂无追加展示资源</span>
+              </div>
+            </div>
+            <el-button link type="primary" @click="addMedia" class="mt-4 add-media-btn">
+              <lucide-plus :size="16" class="mr-1" /> 追加展示资源
+            </el-button>
           </div>
         </div>
       </div>
@@ -68,25 +84,33 @@
       <!-- Right Panel: Media & Status -->
       <div class="panel-right">
         <div class="glass-card form-section sticky-section">
-          <div class="section-title">封面与媒体流</div>
+          <div class="section-title">封面与配置</div>
           
           <div class="media-upload-area">
-            <label>项目封面 (Cover)</label>
-            <div class="cover-preview" v-if="form.coverImage">
-              <img :src="form.coverImage" />
-              <div class="cover-mask" @click="handleUploadCover">
-                <lucide-upload :size="24" />
-                <span>更换封面</span>
+            <label>项目主封面 (Cover Image)</label>
+            <div class="cover-input-box">
+              <div class="cover-preview" v-if="form.coverImage">
+                <img :src="form.coverImage" />
+                <div class="cover-mask">
+                  <lucide-edit-2 :size="20" />
+                  <span>修改 URL</span>
+                </div>
               </div>
-            </div>
-            <div class="cover-placeholder" v-else @click="handleUploadCover">
-              <lucide-image :size="32" />
-              <span>上传高清封面</span>
+              <div class="cover-placeholder" v-else>
+                <lucide-image :size="32" />
+                <span>暂无封面预览</span>
+              </div>
+              <el-input v-model="form.coverImage" placeholder="封面图片直链..." class="mt-4" />
             </div>
           </div>
 
+          <div class="form-item-group">
+            <label>价格定位 (Price)</label>
+            <el-input-number v-model="form.price" :precision="2" :step="10" class="full-width" controls-position="right" />
+          </div>
+
           <div class="tag-manager">
-            <label>管理标签</label>
+            <label>特性标签 (Tags)</label>
             <div class="tag-inputs">
               <el-tag 
                 v-for="tag in form.tags" 
@@ -111,7 +135,7 @@
           </div>
 
           <div class="status-config">
-            <label>发布流通状态</label>
+            <label>发布流通状态 (Status)</label>
             <div class="status-toggle">
               <span :class="{ active: form.status === 1 }">公开上架</span>
               <el-switch 
@@ -123,6 +147,13 @@
               <span :class="{ active: form.status === 0 }">仓库封存</span>
             </div>
           </div>
+        </div>
+
+        <div class="glass-card form-section mt-6">
+          <div class="section-title">外部链路</div>
+          <el-form-item label="演示地址 (Demo URL)">
+            <el-input v-model="form.demoUrl" placeholder="https://..." />
+          </el-form-item>
         </div>
       </div>
     </div>
@@ -138,7 +169,10 @@ import {
   ChevronLeft as LucideChevronLeft,
   Save as LucideSave,
   Image as LucideImage,
-  Upload as LucideUpload
+  Plus as LucidePlus,
+  Trash2 as LucideTrash2,
+  Layers as LucideLayers,
+  Edit2 as LucideEdit2
 } from 'lucide-vue-next'
 
 const route = useRoute()
@@ -147,11 +181,13 @@ const isEdit = ref(!!route.params.id && route.params.id !== 'new')
 const loading = ref(false)
 const submitting = ref(false)
 const categories = ref<any[]>([])
+const formRef = ref()
 
 // --- Form State ---
 const form = reactive({
-  id: route.params.id === 'new' ? null : Number(route.params.id),
-  name: '',
+  id: route.params.id === 'new' ? undefined : Number(route.params.id),
+  title: '',
+  type: '',
   categoryId: null,
   techStack: '',
   contentHtml: '',
@@ -159,8 +195,14 @@ const form = reactive({
   demoUrl: '',
   price: 0,
   status: 1,
-  tags: [] as string[]
+  tags: [] as string[],
+  medias: [] as any[]
 })
+
+const rules = {
+  title: [{ required: true, message: '资产标题不可为空', trigger: 'blur' }],
+  categoryId: [{ required: true, message: '请选择业务分类', trigger: 'change' }]
+}
 
 // --- Tag Input State ---
 const inputValue = ref('')
@@ -169,8 +211,12 @@ const InputRef = ref<InstanceType<typeof ElInput>>()
 
 // --- Actions ---
 const loadCategories = async () => {
-  const res: any = await request.get('/api/categories/list')
-  categories.value = res.data
+  try {
+    const res: any = await request.get('/api/categories/list')
+    categories.value = res.data
+  } catch (_err) {
+    console.error('分类加载失败')
+  }
 }
 
 const loadProject = async () => {
@@ -179,7 +225,10 @@ const loadProject = async () => {
   try {
     const res: any = await request.get(`/api/projects/${form.id}`)
     Object.assign(form, res.data)
-  } catch (e) {
+    // 确保 medias 是数组
+    if (!form.medias) form.medias = []
+    if (!form.tags) form.tags = []
+  } catch (_e) {
     ElMessage.error('无法调取资产快照')
   } finally {
     loading.value = false
@@ -187,7 +236,12 @@ const loadProject = async () => {
 }
 
 const handleSave = async () => {
-  if (!form.name) return ElMessage.warning('资产标题不能为空')
+  if (!formRef.value) return
+  try {
+    await formRef.value.validate()
+  } catch (_e) {
+    return ElMessage.warning('请完善表单必填项')
+  }
   
   submitting.value = true
   try {
@@ -196,18 +250,17 @@ const handleSave = async () => {
     } else {
       await request.post('/api/projects', form)
     }
-    ElMessage.success('资产数据已固化至云端')
+    ElMessage.success('资产数据已成功同步至云端')
     router.push('/projects')
-  } catch (e) {
+  } catch (_e) {
     ElMessage.error('持久化链路异常')
   } finally {
     submitting.value = false
   }
 }
 
-const handleUploadCover = () => {
-  ElMessage.info('媒体溯源模块正在升级，请等待系统通知')
-}
+const addMedia = () => form.medias.push({ type: 1, url: '' })
+const removeMedia = (index: number) => form.medias.splice(index, 1)
 
 // --- Tag Logic ---
 const showInput = () => {
@@ -216,7 +269,7 @@ const showInput = () => {
 }
 
 const handleInputConfirm = () => {
-  if (inputValue.value) {
+  if (inputValue.value && !form.tags.includes(inputValue.value)) {
     form.tags.push(inputValue.value)
   }
   inputVisible.value = false
@@ -236,6 +289,7 @@ onMounted(() => {
 <style scoped>
 .project-detail-wrapper {
   animation: slide-up 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  padding-bottom: 60px;
 }
 
 /* --- Header --- */
@@ -270,14 +324,16 @@ onMounted(() => {
 /* --- Grid Layout --- */
 .detail-grid {
   display: grid;
-  grid-template-columns: 1fr 340px;
+  grid-template-columns: 1fr 360px;
   gap: 24px;
+  align-items: start;
 }
 
 .form-section {
   padding: 32px;
-  margin-bottom: 24px;
 }
+
+.mt-6 { margin-top: 24px; }
 
 .section-title {
   font-size: 12px;
@@ -298,16 +354,17 @@ onMounted(() => {
   background: var(--admin-border);
 }
 
-/* --- Elements --- */
+/* --- Core Form Elements --- */
 .large-input :deep(.el-input__wrapper) {
   font-size: 20px;
-  padding: 8px 16px;
+  padding: 10px 16px;
   font-weight: 700;
+  background: var(--admin-bg) !important;
 }
 
-.row-flex { display: flex; gap: 20px; }
-.flex-1 { flex: 1; }
-.flex-2 { flex: 2; }
+.row-flex { display: flex; gap: 20px; flex-wrap: wrap; }
+.flex-1 { flex: 1; min-width: 150px; }
+.flex-2 { flex: 2; min-width: 200px; }
 .full-width { width: 100%; }
 
 .monochrome-textarea :deep(.el-textarea__inner) {
@@ -316,11 +373,60 @@ onMounted(() => {
   font-family: var(--font-data);
   line-height: 1.8;
   padding: 20px;
+  border-radius: 12px;
 }
 
-/* --- Right Panel --- */
-.media-upload-area { margin-bottom: 32px; }
+/* --- Media Section --- */
+.media-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.media-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.media-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: var(--admin-bg);
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid var(--admin-border);
+}
+
+.delete-media-btn:hover {
+  background: rgba(239,68,68,0.1) !important;
+}
+
+.empty-media {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--admin-text-muted);
+  gap: 12px;
+  border: 2px dashed var(--admin-border);
+  border-radius: 16px;
+}
+
+.add-media-btn {
+  align-self: flex-start;
+  font-weight: 600;
+}
+
+/* --- Right Panel Elements --- */
+.media-upload-area { margin-bottom: 24px; }
 .media-upload-area label { display: block; font-size: 12px; color: var(--admin-text-muted); margin-bottom: 12px; font-weight: 700; }
+
+.cover-input-box {
+  display: flex;
+  flex-direction: column;
+}
 
 .cover-preview {
   position: relative;
@@ -328,13 +434,14 @@ onMounted(() => {
   overflow: hidden;
   aspect-ratio: 16/9;
   border: 1px solid var(--admin-border);
+  box-shadow: var(--admin-shadow-sm);
 }
 
 .cover-preview img { width: 100%; height: 100%; object-fit: cover; }
 .cover-mask {
-  position: absolute; inset: 0; background: rgba(0,0,0,0.6);
+  position: absolute; inset: 0; background: rgba(0,0,0,0.4);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 10px; opacity: 0; transition: 0.3s; cursor: pointer; color: #fff;
+  gap: 8px; opacity: 0; transition: 0.3s; color: #fff;
 }
 .cover-preview:hover .cover-mask { opacity: 1; }
 
@@ -348,12 +455,12 @@ onMounted(() => {
   justify-content: center;
   gap: 12px;
   color: var(--admin-text-muted);
-  cursor: pointer;
-  transition: 0.3s;
 }
-.cover-placeholder:hover { border-color: var(--admin-primary); color: var(--admin-primary); background: var(--admin-primary-glow); }
 
-.tag-manager { margin-bottom: 32px; }
+.form-item-group { margin-bottom: 24px; }
+.form-item-group label { display: block; font-size: 12px; color: var(--admin-text-muted); margin-bottom: 12px; font-weight: 700; }
+
+.tag-manager { margin-bottom: 24px; }
 .tag-manager label { display: block; font-size: 12px; color: var(--admin-text-muted); margin-bottom: 12px; font-weight: 700; }
 .tag-inputs { display: flex; flex-wrap: wrap; gap: 8px; }
 
@@ -361,8 +468,8 @@ onMounted(() => {
 .status-toggle {
   display: flex;
   align-items: center;
-  gap: 16px;
-  background: var(--admin-bg);
+  justify-content: space-between;
+  background: var(--admin-surface-light);
   padding: 12px 20px;
   border-radius: 12px;
   border: 1px solid var(--admin-border);
@@ -374,5 +481,9 @@ onMounted(() => {
 @keyframes slide-up {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+:deep(.el-input-number.full-width) {
+  width: 100%;
 }
 </style>
