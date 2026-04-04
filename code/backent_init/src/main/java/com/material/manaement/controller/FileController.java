@@ -6,6 +6,7 @@ import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
+import io.minio.SetBucketPolicyArgs;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -55,13 +56,21 @@ public class FileController {
 
             String objectName = folder + UUID.randomUUID() + extension;
 
-            // 确保存储桶存在
+            // 确保存储桶存在并设置为公开读取
             boolean found = minioClient.bucketExists(
                     BucketExistsArgs.builder().bucket(minioConfig.getBucket()).build());
             if (!found) {
                 minioClient.makeBucket(
                         MakeBucketArgs.builder().bucket(minioConfig.getBucket()).build());
             }
+
+            // 强制设置公开读取策略 (确保之前创建的私有桶也能正常访问)
+            String policy = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"*\"]},\"Action\":[\"s3:GetBucketLocation\",\"s3:ListBucket\"],\"Resource\":[\"arn:aws:s3:::"
+                    + minioConfig.getBucket()
+                    + "\"]},{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"*\"]},\"Action\":[\"s3:GetObject\"],\"Resource\":[\"arn:aws:s3:::"
+                    + minioConfig.getBucket() + "/*\"]}]}";
+            minioClient.setBucketPolicy(
+                    SetBucketPolicyArgs.builder().bucket(minioConfig.getBucket()).config(policy).build());
 
             minioClient.putObject(
                     PutObjectArgs.builder()
