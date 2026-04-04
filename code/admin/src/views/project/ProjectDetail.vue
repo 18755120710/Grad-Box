@@ -70,7 +70,7 @@
                       :action="uploadUrl"
                       :headers="uploadHeaders"
                       :show-file-list="false"
-                      :on-success="(res) => handleMediaUploadSuccess(res, index)"
+                      :on-success="(res: any) => handleMediaUploadSuccess(res, index)"
                     >
                       <el-button link type="primary">
                         <lucide-upload :size="14" />
@@ -209,7 +209,7 @@ const formRef = ref()
 
 const uploadUrl = 'http://localhost:8080/api/file/upload'
 const uploadHeaders = {
-  Authorization: authStore.tokenHead + authStore.token
+  Authorization: (authStore.tokenHead || '') + (authStore.token || '')
 }
 
 // --- Form State ---
@@ -466,38 +466,80 @@ onMounted(() => {
   width: 100%;
 }
 
+.cover-uploader :deep(.el-upload) {
+  width: 100%;
+  display: block;
+}
+
 .cover-input-box {
   display: flex;
   flex-direction: column;
+  gap: 16px;
 }
 
 .cover-preview {
   position: relative;
-  border-radius: 16px;
+  border-radius: 20px;
   overflow: hidden;
   aspect-ratio: 16/9;
   border: 1px solid var(--admin-border);
   box-shadow: var(--admin-shadow-sm);
+  background: var(--admin-bg);
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cover-preview:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--admin-shadow-lg);
+  border-color: var(--admin-primary);
 }
 
 .cover-preview img { width: 100%; height: 100%; object-fit: cover; }
 .cover-mask {
-  position: absolute; inset: 0; background: rgba(0,0,0,0.4);
+  position: absolute; inset: 0; 
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 8px; opacity: 0; transition: 0.3s; color: #fff;
+  gap: 12px; opacity: 0; transition: all 0.3s; color: #fff;
 }
 .cover-preview:hover .cover-mask { opacity: 1; }
 
 .cover-placeholder {
   aspect-ratio: 16/9;
   border: 2px dashed var(--admin-border);
-  border-radius: 16px;
+  background: var(--admin-surface-light);
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 16px;
   color: var(--admin-text-muted);
+  cursor: pointer;
+  transition: all 0.4s ease;
+}
+
+.cover-placeholder:hover {
+  border-color: var(--admin-primary);
+  color: var(--admin-primary);
+  background: var(--admin-primary-glow);
+  transform: scale(1.02);
+}
+
+.cover-placeholder .lucide-image {
+  transform: scale(1.2);
+  transition: transform 0.4s;
+}
+
+.cover-placeholder:hover .lucide-image {
+  transform: scale(1.4) rotate(5deg);
+}
+
+.cover-placeholder span {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
 .form-item-group { margin-bottom: 24px; }
