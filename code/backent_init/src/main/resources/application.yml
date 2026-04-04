@@ -18,11 +18,11 @@ jwt:
   tokenHead: 'Bearer '  #JWT负载中拿到开头
 
 minio:
-  endpoint: http://47.102.205.85:19001
+  endpoint: http://47.102.205.85:19000
   accessKey: minio
   secretKey: wj08265395
-  bucket: grad-box
-  public-url: http://47.102.205.85:19001/grad-box
+  bucket: gradbox
+  public-url: http://47.102.205.85:19000/gradbox
 
 logging:
   level:

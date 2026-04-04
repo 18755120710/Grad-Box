@@ -2,6 +2,8 @@ package com.material.manaement.controller;
 
 import com.material.manaement.common.Result;
 import com.material.manaement.config.MinioConfig;
+import io.minio.BucketExistsArgs;
+import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,14 +55,21 @@ public class FileController {
 
             String objectName = folder + UUID.randomUUID() + extension;
 
+            // 确保存储桶存在
+            boolean found = minioClient.bucketExists(
+                    BucketExistsArgs.builder().bucket(minioConfig.getBucket()).build());
+            if (!found) {
+                minioClient.makeBucket(
+                        MakeBucketArgs.builder().bucket(minioConfig.getBucket()).build());
+            }
+
             minioClient.putObject(
                     PutObjectArgs.builder()
                             .bucket(minioConfig.getBucket())
                             .object(objectName)
                             .stream(file.getInputStream(), file.getSize(), -1)
                             .contentType(contentType)
-                            .build()
-            );
+                            .build());
 
             String fileUrl = minioConfig.getPublicUrl() + "/" + objectName;
             log.info("文件上传成功: {}", fileUrl);
