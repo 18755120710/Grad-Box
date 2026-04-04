@@ -64,7 +64,20 @@
                   <el-option label="展示图片" :value="1" />
                   <el-option label="视频演示" :value="2" />
                 </el-select>
-                <el-input v-model="media.url" placeholder="媒体直链 URL (CDN)" />
+                <el-input v-model="media.url" placeholder="媒体直链 URL (CDN)">
+                  <template #append>
+                    <el-upload
+                      :action="uploadUrl"
+                      :headers="uploadHeaders"
+                      :show-file-list="false"
+                      :on-success="(res) => handleMediaUploadSuccess(res, index)"
+                    >
+                      <el-button link type="primary">
+                        <lucide-upload :size="14" />
+                      </el-button>
+                    </el-upload>
+                  </template>
+                </el-input>
                 <el-button circle plain type="danger" @click="removeMedia(index)" class="delete-media-btn">
                   <lucide-trash-2 :size="14" />
                 </el-button>
@@ -89,18 +102,26 @@
           <div class="media-upload-area">
             <label>项目主封面 (Cover Image)</label>
             <div class="cover-input-box">
-              <div class="cover-preview" v-if="form.coverImage">
-                <img :src="form.coverImage" />
-                <div class="cover-mask">
-                  <lucide-edit-2 :size="20" />
-                  <span>修改 URL</span>
+              <el-upload
+                class="cover-uploader"
+                :action="uploadUrl"
+                :headers="uploadHeaders"
+                :show-file-list="false"
+                :on-success="handleCoverSuccess"
+              >
+                <div class="cover-preview" v-if="form.coverImage">
+                  <img :src="form.coverImage" />
+                  <div class="cover-mask">
+                    <lucide-upload :size="24" />
+                    <span>更换封面图</span>
+                  </div>
                 </div>
-              </div>
-              <div class="cover-placeholder" v-else>
-                <lucide-image :size="32" />
-                <span>暂无封面预览</span>
-              </div>
-              <el-input v-model="form.coverImage" placeholder="封面图片直链..." class="mt-4" />
+                <div class="cover-placeholder" v-else>
+                  <lucide-image :size="32" />
+                  <span>点击上传封面</span>
+                </div>
+              </el-upload>
+              <el-input v-model="form.coverImage" placeholder="或手动输入封面直链..." class="mt-4" />
             </div>
           </div>
 
@@ -165,6 +186,7 @@ import { ref, onMounted, reactive, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import request from '@/utils/request'
 import { ElMessage, ElInput } from 'element-plus'
+import { useAuthStore } from '@/stores/auth'
 import {
   ChevronLeft as LucideChevronLeft,
   Save as LucideSave,
@@ -172,16 +194,23 @@ import {
   Plus as LucidePlus,
   Trash2 as LucideTrash2,
   Layers as LucideLayers,
-  Edit2 as LucideEdit2
+  Edit2 as LucideEdit2,
+  Upload as LucideUpload
 } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 const isEdit = ref(!!route.params.id && route.params.id !== 'new')
 const loading = ref(false)
 const submitting = ref(false)
 const categories = ref<any[]>([])
 const formRef = ref()
+
+const uploadUrl = 'http://localhost:8080/api/file/upload'
+const uploadHeaders = {
+  Authorization: authStore.tokenHead + authStore.token
+}
 
 // --- Form State ---
 const form = reactive({
@@ -261,6 +290,16 @@ const handleSave = async () => {
 
 const addMedia = () => form.medias.push({ type: 1, url: '' })
 const removeMedia = (index: number) => form.medias.splice(index, 1)
+
+const handleCoverSuccess = (res: any) => {
+  form.coverImage = res.data
+  ElMessage.success('封面上传成功')
+}
+
+const handleMediaUploadSuccess = (res: any, index: number) => {
+  form.medias[index].url = res.data
+  ElMessage.success('资源上传成功')
+}
 
 // --- Tag Logic ---
 const showInput = () => {
@@ -422,6 +461,10 @@ onMounted(() => {
 /* --- Right Panel Elements --- */
 .media-upload-area { margin-bottom: 24px; }
 .media-upload-area label { display: block; font-size: 12px; color: var(--admin-text-muted); margin-bottom: 12px; font-weight: 700; }
+
+.cover-uploader {
+  width: 100%;
+}
 
 .cover-input-box {
   display: flex;
