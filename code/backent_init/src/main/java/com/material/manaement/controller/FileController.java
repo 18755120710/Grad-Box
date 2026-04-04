@@ -6,11 +6,13 @@ import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
 import io.minio.SetBucketPolicyArgs;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -86,6 +88,27 @@ public class FileController {
         } catch (Exception e) {
             log.error("MinIO 上传异常: ", e);
             return Result.failed("上传失败: " + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "通过 MinIO 删除文件")
+    @DeleteMapping("/delete")
+    public Result<String> delete(@RequestParam String url) {
+        try {
+            // 从 URL 中提取对象名称
+            // URL 格式: http://ip:port/bucketName/path/to/file
+            String bucketName = minioConfig.getBucket();
+            String objectName = url.substring(url.indexOf(bucketName) + bucketName.length() + 1);
+
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(objectName)
+                            .build());
+            return Result.success("文件已从云端移除");
+        } catch (Exception e) {
+            log.error("MinIO 删除异常: ", e);
+            return Result.failed("文件删除失败: " + e.getMessage());
         }
     }
 }

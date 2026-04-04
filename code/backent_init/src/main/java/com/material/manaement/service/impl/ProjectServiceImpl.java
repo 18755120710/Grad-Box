@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> implements ProjectService {
@@ -130,8 +131,58 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
 
             // Record visit (Async or simple) - actually update view_count
             project.setViewCount((project.getViewCount() == null ? 0 : project.getViewCount()) + 1);
-            updateById(project);
+            super.updateById(project);
         }
         return project;
+    }
+
+    @Override
+    @Transactional
+    public boolean save(Project entity) {
+        boolean saved = super.save(entity);
+        if (saved) {
+            saveProjectRelations(entity);
+        }
+        return saved;
+    }
+
+    @Override
+    @Transactional
+    public boolean updateById(Project entity) {
+        boolean updated = super.updateById(entity);
+        if (updated) {
+            saveProjectRelations(entity);
+        }
+        return updated;
+    }
+
+    private void saveProjectRelations(Project project) {
+        Long projectId = project.getId();
+
+        // 1. Handle Medias
+        // Delete existing
+        projectMediaMapper.delete(new LambdaQueryWrapper<com.material.manaement.model.entity.ProjectMedia>()
+                .eq(com.material.manaement.model.entity.ProjectMedia::getProjectId, projectId));
+        // Insert new
+        if (project.getMedias() != null && !project.getMedias().isEmpty()) {
+            project.getMedias().forEach(media -> {
+                media.setId(null);
+                media.setProjectId(projectId);
+                projectMediaMapper.insert(media);
+            });
+        }
+
+        // 2. Handle Tech Details
+        // Delete existing
+        projectTechDetailMapper.delete(new LambdaQueryWrapper<com.material.manaement.model.entity.ProjectTechDetail>()
+                .eq(com.material.manaement.model.entity.ProjectTechDetail::getProjectId, projectId));
+        // Insert new
+        if (project.getTechDetails() != null && !project.getTechDetails().isEmpty()) {
+            project.getTechDetails().forEach(detail -> {
+                detail.setId(null);
+                detail.setProjectId(projectId);
+                projectTechDetailMapper.insert(detail);
+            });
+        }
     }
 }

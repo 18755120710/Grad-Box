@@ -138,7 +138,12 @@
                   </template>
                 </div>
               </el-upload>
-              <el-input v-model="form.coverImage" placeholder="或手动输入封面直链..." class="mt-4" />
+              <div class="cover-input-group mt-4">
+                <el-input v-model="form.coverImage" placeholder="或手动输入封面直链..." class="flex-1" />
+                <el-button v-if="form.coverImage" type="danger" plain @click="handleDeleteCover">
+                  <lucide-trash-2 :size="14" />
+                </el-button>
+              </div>
             </div>
           </div>
 
@@ -201,7 +206,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage, type ElInput } from 'element-plus'
+import { ElMessage, ElMessageBox, type ElInput } from 'element-plus'
 import request from '@/utils/request'
 import { useAuthStore } from '@/stores/auth'
 import { 
@@ -314,9 +319,35 @@ const handleSave = async () => {
 }
 
 const addMedia = () => form.medias.push({ mediaType: 1, mediaUrl: '' })
-const removeMedia = (index: number) => {
+
+const removeMedia = async (index: number) => {
+  const media = form.medias[index]
+  if (media.mediaUrl) {
+    try {
+      await ElMessageBox.confirm('确认从云端永久删除此素材？', '警告', { type: 'warning' })
+      await request.delete('/api/file/delete', { params: { url: media.mediaUrl } })
+      ElMessage.success('云端文件已清理')
+    } catch (e) {
+      if (e === 'cancel') return
+      console.error('Delete failed:', e)
+    }
+  }
   form.medias.splice(index, 1)
   delete mediaProgress[index]
+}
+
+const handleDeleteCover = async () => {
+  if (!form.coverImage) return
+  try {
+    await ElMessageBox.confirm('确认删除当前封面图并同步清理云端文件？', '警告', { type: 'warning' })
+    await request.delete('/api/file/delete', { params: { url: form.coverImage } })
+    form.coverImage = ''
+    coverProgress.value = 0
+    ElMessage.success('封面已移除')
+  } catch (e) {
+    if (e === 'cancel') return
+    ElMessage.error('清理失败')
+  }
 }
 
 const handleCoverProgress = (evt: any) => {
@@ -528,6 +559,11 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.cover-input-group {
+  display: flex;
+  gap: 8px;
 }
 
 .cover-preview {
