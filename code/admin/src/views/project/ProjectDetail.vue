@@ -44,12 +44,14 @@
             </div>
 
             <el-form-item label="项目深度描述 (Rich Content)">
-              <el-input 
+              <md-editor 
                 v-model="form.contentHtml" 
-                type="textarea" 
-                :rows="12" 
                 placeholder="在此编写详细的项目介绍、功能点及技术实现逻辑..." 
-                class="monochrome-textarea"
+                class="monochrome-editor"
+                language="zh-CN"
+                :toolbars="[
+                  'bold', 'italic', 'strikeThrough', '-', 'title', 'sub', 'sup', 'quote', 'unorderedList', 'orderedList', 'task', '-', 'codeRow', 'code', 'link', 'image', 'table', 'mermaid', 'katex', '-', 'revoke', 'next', 'save', '=', 'pageFullscreen', 'fullscreen', 'preview', 'htmlPreview'
+                ]"
               />
             </el-form-item>
           </el-form>
@@ -223,6 +225,8 @@ import {
   LucideCloudUpload,
   LucideSave
 } from 'lucide-vue-next'
+import { MdEditor } from 'md-editor-v3'
+import 'md-editor-v3/lib/style.css'
 
 const route = useRoute()
 const router = useRouter()
@@ -337,7 +341,7 @@ const removeMedia = async (index: number) => {
     }
   }
   form.medias.splice(index, 1)
-  delete mediaProgress[index]
+  delete mediaProgress.value[index]
 }
 
 const handleDeleteCover = async () => {
@@ -499,13 +503,16 @@ onMounted(() => {
 .flex-2 { flex: 2; min-width: 200px; }
 .full-width { width: 100%; }
 
-.monochrome-textarea :deep(.el-textarea__inner) {
-  background: var(--admin-surface-light) !important;
+.monochrome-editor {
+  --md-bk-color: var(--admin-surface-light);
+  height: 500px;
   border: 1px solid var(--admin-border);
-  font-family: var(--font-data);
-  line-height: 1.8;
-  padding: 20px;
   border-radius: 12px;
+}
+
+:deep(.md-editor) {
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 /* --- Media Section --- */
