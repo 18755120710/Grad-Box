@@ -161,6 +161,16 @@
                      <p class="text-[10px] uppercase tracking-profound text-slate-400 font-bold">展示图片整理中</p>
                   </div>
                 </div>
+
+                <div v-if="activeTab === 'detail'" class="animate-fade-in">
+                  <div v-if="project.contentHtml" class="prose prose-slate max-w-none">
+                    <md-preview :modelValue="project.contentHtml" />
+                  </div>
+                  <div v-else class="py-16 text-center space-y-4">
+                     <BookOpen :size="32" class="text-slate-200 mx-auto" />
+                     <p class="text-[10px] uppercase tracking-profound text-slate-400 font-bold">深度描述编写中</p>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -235,6 +245,8 @@ import {
   CheckCircle, Smartphone, Check, Zap, UserCheck, X, ShieldCheck, Lock, CheckCircle2, ArrowRight,
   MonitorDot, Code2, BookOpen, Video, Image, MessageCircle, VideoOff, Database
 } from 'lucide-vue-next'
+import { MdPreview } from 'md-editor-v3'
+import 'md-editor-v3/lib/style.css'
 
 const route = useRoute()
 const api = useApi()
@@ -265,6 +277,7 @@ const techTags = computed(() => project.value?.techStack?.split(',') || ['Academ
 
 const tabOptions = computed(() => [
   { id: 'overview', label: '项目总览', icon: Telescope },
+  { id: 'detail', label: '深度解析', icon: BookOpen },
   { id: 'video', label: '视频演示', icon: Video, show: project.value?.medias?.some(m => m.mediaType === 2) },
   { id: 'media', label: '图片展示', icon: Image, show: project.value?.medias?.some(m => m.mediaType === 1) },
   { id: 'specs', label: '技术细节', icon: Cpu },
