@@ -71,17 +71,19 @@
                         :action="uploadUrl"
                         :headers="uploadHeaders"
                         :show-file-list="false"
+                        :before-upload="() => handleMediaBeforeUpload(index)"
                         :on-success="(res: any) => handleMediaUploadSuccess(res, index)"
                         :on-progress="(evt: any) => handleMediaProgress(evt, index)"
+                        :on-error="() => handleMediaError(index)"
                       >
-                        <el-button link type="primary" :disabled="mediaProgress[index] !== undefined && mediaProgress[index] < 100">
+                        <el-button link type="primary" :disabled="mediaProgress[index] > 0 && mediaProgress[index] < 100">
                           <lucide-upload :size="14" />
                         </el-button>
                       </el-upload>
                     </template>
                   </el-input>
                   <el-progress 
-                    v-if="mediaProgress[index] !== undefined && mediaProgress[index] < 100"
+                    v-if="mediaProgress[index] > 0 && mediaProgress[index] < 100"
                     :percentage="mediaProgress[index]" 
                     :show-text="false"
                     stroke-width="2"
@@ -117,8 +119,10 @@
                 :action="uploadUrl"
                 :headers="uploadHeaders"
                 :show-file-list="false"
+                :before-upload="handleCoverBeforeUpload"
                 :on-success="handleCoverSuccess"
                 :on-progress="handleCoverProgress"
+                :on-error="handleCoverError"
               >
                 <div class="cover-preview" v-if="form.coverImage">
                   <img :src="form.coverImage" />
@@ -252,10 +256,10 @@ const form = reactive({
 
 // --- Upload Progress State ---
 const coverProgress = ref(0)
-const mediaProgress = reactive<Record<number, number>>({})
+const mediaProgress = ref<Record<number, number>>({})
 const isUploading = computed(() => {
   if (coverProgress.value > 0 && coverProgress.value < 100) return true
-  return Object.values(mediaProgress).some(p => p > 0 && p < 100)
+  return Object.values(mediaProgress.value).some(p => p > 0 && p < 100)
 })
 
 const rules = {
@@ -350,6 +354,11 @@ const handleDeleteCover = async () => {
   }
 }
 
+const handleCoverBeforeUpload = () => {
+  coverProgress.value = 1
+  return true
+}
+
 const handleCoverProgress = (evt: any) => {
   coverProgress.value = Math.round(evt.percent)
 }
@@ -360,14 +369,29 @@ const handleCoverSuccess = (res: any) => {
   ElMessage.success('封面上传成功')
 }
 
+const handleCoverError = () => {
+  coverProgress.value = 0
+  ElMessage.error('封面上传失败')
+}
+
+const handleMediaBeforeUpload = (index: number) => {
+  mediaProgress.value[index] = 1
+  return true
+}
+
 const handleMediaProgress = (evt: any, index: number) => {
-  mediaProgress[index] = Math.round(evt.percent)
+  mediaProgress.value[index] = Math.round(evt.percent)
 }
 
 const handleMediaUploadSuccess = (res: any, index: number) => {
   form.medias[index].mediaUrl = res.data
-  mediaProgress[index] = 100
+  mediaProgress.value[index] = 100
   ElMessage.success('素材上传成功')
+}
+
+const handleMediaError = (index: number) => {
+  mediaProgress.value[index] = 0
+  ElMessage.error('素材上传失败')
 }
 
 // --- Tag Logic ---
