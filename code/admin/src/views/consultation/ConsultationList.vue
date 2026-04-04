@@ -26,7 +26,7 @@
         class="oled-table"
         row-class-name="consultation-row"
       >
-        <el-table-column label="工单来源" width="180">
+        <el-table-column label="工单来源" width="200">
           <template #default="{ row }">
             <div class="user-info-cell">
               <div class="avatar-placeholder">
@@ -34,13 +34,23 @@
               </div>
               <div class="user-meta">
                 <span class="name">{{ row.contactName }}</span>
+                <el-tag v-if="row.priority === 1" size="small" type="danger" effect="dark" class="priority-tag">紧急</el-tag>
                 <span class="phone">{{ row.contactPhone }}</span>
               </div>
             </div>
           </template>
         </el-table-column>
 
-        <el-table-column label="咨询诉求" min-width="300">
+        <el-table-column label="关联项目" width="180">
+          <template #default="{ row }">
+            <div class="project-context">
+              <lucide-layers :size="14" />
+              <span class="project-name">{{ row.projectTitle || '通用咨询' }}</span>
+            </div>
+          </template>
+        </el-table-column>
+
+        <el-table-column label="咨询诉求" min-width="250">
           <template #default="{ row }">
             <div class="content-cell">
               <p class="content-text">{{ row.content }}</p>
@@ -146,7 +156,8 @@ import {
   User as LucideUser,
   MessageSquare as LucideMessageSquare,
   Clock as LucideClock,
-  CornerDownRight as LucideCornerDownRight
+  CornerDownRight as LucideCornerDownRight,
+  Layers as LucideLayers
 } from 'lucide-vue-next'
 
 // --- State ---
@@ -268,9 +279,13 @@ onMounted(loadData)
   border: 1px solid var(--admin-border);
 }
 
-.user-meta { display: flex; flex-direction: column; }
-.user-meta .name { font-weight: 600; color: var(--admin-text-main); font-size: 14px; }
+.user-meta { display: flex; flex-direction: column; gap: 4px; }
+.user-meta .name { font-weight: 600; color: var(--admin-text-main); font-size: 14px; display: flex; align-items: center; gap: 8px; }
+.priority-tag { font-size: 10px; height: 18px; padding: 0 6px; line-height: 16px; border: none; }
 .user-meta .phone { font-size: 11px; color: var(--admin-text-muted); font-family: var(--font-data); }
+
+.project-context { display: flex; align-items: center; gap: 8px; color: var(--admin-text-secondary); }
+.project-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
 
 .content-cell { display: flex; flex-direction: column; gap: 8px; padding: 8px 0; }
 .content-text { color: var(--admin-text-main); line-height: 1.5; font-size: 14px; }

@@ -90,9 +90,14 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="治理操作" width="140" fixed="right" align="center">
+        <el-table-column label="治理操作" width="180" fixed="right" align="center">
           <template #default="{ row }">
             <div class="governance-actions">
+              <el-tooltip content="活动审计" placement="top">
+                <el-button circle class="action-btn" @click="handleShowLogs(row)">
+                  <lucide-shield :size="16" />
+                </el-button>
+              </el-tooltip>
               <el-tooltip content="重置密码" placement="top">
                 <el-button circle class="action-btn" @click="handleResetPwd(row)">
                   <lucide-key :size="16" />
@@ -107,6 +112,27 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <!-- Activity Logs Dialog -->
+      <el-dialog v-model="logVisible" title="行为审计日志" width="600px" custom-class="oled-dialog">
+        <el-table :data="userLogs" v-loading="logLoading" class="oled-table mini">
+          <el-table-column label="接入时间" width="160">
+            <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
+          </el-table-column>
+          <el-table-column property="action" label="操作事务" width="120" />
+          <el-table-column property="ip" label="溯源IP" width="130" />
+          <el-table-column property="details" label="详细报文" />
+        </el-table>
+        <div class="dialog-pagination">
+          <el-pagination
+            v-model:current-page="logPage.pageNum"
+            :total="logTotal"
+            layout="prev, pager, next"
+            small
+            @current-change="loadUserLogs"
+          />
+        </div>
+      </el-dialog>
 
       <div class="pagination-area">
         <el-pagination
@@ -146,6 +172,17 @@ const page = reactive({
 const queryForm = reactive({
   username: '',
   status: null
+})
+
+// --- Activity Logs State ---
+const logVisible = ref(false)
+const logLoading = ref(false)
+const userLogs = ref([])
+const logTotal = ref(0)
+const activeUserId = ref(null)
+const logPage = reactive({
+  pageNum: 1,
+  pageSize: 10
 })
 
 // --- Actions ---
@@ -210,6 +247,31 @@ const handleKick = (row: any) => {
   }).then(() => {
     ElMessage.error('该用户具备高级别保护，操作已拦截')
   })
+}
+
+const handleShowLogs = (row: any) => {
+  activeUserId.value = row.id
+  logVisible.value = true
+  logPage.pageNum = 1
+  loadUserLogs()
+}
+
+const loadUserLogs = async () => {
+  logLoading.value = true
+  try {
+    const res: any = await request.get('/api/admin/user-logs/list', { 
+      params: { 
+        userId: activeUserId.value,
+        ...logPage
+      }
+    })
+    userLogs.value = res.data.records
+    logTotal.value = res.data.total
+  } catch (e) {
+    ElMessage.error('无法调取行为审计日志')
+  } finally {
+    logLoading.value = false
+  }
 }
 
 onMounted(loadData)

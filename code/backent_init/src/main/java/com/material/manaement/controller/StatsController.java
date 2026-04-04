@@ -106,16 +106,10 @@ public class StatsController {
                         LocalDate date = LocalDate.now().minusDays(i);
                         dates.add(date.format(formatter));
 
-                        // DAU: Count unique IPs for the day
-                        long dau = userLogService.list(new LambdaQueryWrapper<UserLog>()
+                        // Total Visits (PV): Count all logs for the day (e.g., VISIT, LOGIN)
+                        long dau = userLogService.count(new LambdaQueryWrapper<UserLog>()
                                         .ge(UserLog::getCreateTime, java.sql.Date.valueOf(date))
-                                        .lt(UserLog::getCreateTime, java.sql.Date.valueOf(date.plusDays(1)))
-                                        .select(UserLog::getIp))
-                                        .stream()
-                                        .filter(log -> log.getIp() != null)
-                                        .map(UserLog::getIp)
-                                        .distinct()
-                                        .count();
+                                        .lt(UserLog::getCreateTime, java.sql.Date.valueOf(date.plusDays(1))));
 
                         values.add(dau);
                 }

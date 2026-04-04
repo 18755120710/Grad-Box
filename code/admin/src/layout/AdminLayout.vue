@@ -182,112 +182,122 @@ const handleCommand = (command: string) => {
   flex-direction: column;
   position: relative;
   z-index: 100;
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.02);
 }
 
 .logo-container {
-  height: 80px;
+  height: 100px;
   display: flex;
   align-items: center;
-  padding: 0 24px;
-  gap: 12px;
+  padding: 0 32px;
+  gap: 16px;
   position: relative;
-  border-bottom: 1px solid var(--admin-border);
 }
 
 .logo-glow {
   position: absolute;
-  width: 40px;
-  height: 40px;
-  background: var(--admin-primary);
-  filter: blur(30px);
-  opacity: 0.2;
+  width: 60px;
+  height: 60px;
+  background: var(--brand-primary);
+  filter: blur(40px);
+  opacity: 0.1;
   left: 20px;
 }
 
 .admin-logo-img {
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
   object-fit: cover;
-  border-radius: 10px;
+  border-radius: 16px;
   border: 1px solid var(--admin-border);
   position: relative;
   z-index: 2;
+  background: white;
+  padding: 2px;
 }
 
 .logo-text {
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -1px;
   color: var(--admin-text-main);
   font-family: var(--font-main);
+  text-transform: uppercase;
+  italic: true;
 }
 
 .admin-badge {
-  font-size: 10px;
-  background: var(--admin-primary-glow);
-  color: var(--admin-primary);
-  padding: 2px 6px;
-  border-radius: 4px;
+  font-size: 9px;
+  background: var(--brand-primary);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 20px;
   vertical-align: middle;
-  margin-left: 4px;
+  margin-left: 6px;
+  font-weight: 900;
+  letter-spacing: 1px;
 }
 
 .admin-menu {
-  padding: 16px 12px;
+  padding: 20px 16px;
   background-color: transparent !important;
   border-right: none !important;
 }
 
 .menu-divider {
-  padding: 24px 16px 8px;
-  font-size: 11px;
+  padding: 32px 20px 12px;
+  font-size: 10px;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
+  letter-spacing: 3px;
   color: var(--admin-text-muted);
-  font-weight: 700;
+  font-weight: 900;
+  opacity: 0.5;
 }
 
 :deep(.el-menu-item) {
-  height: 48px;
-  line-height: 48px;
-  border-radius: 12px;
-  margin-bottom: 4px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 54px;
+  line-height: 54px;
+  border-radius: 16px;
+  margin-bottom: 8px;
+  transition: all 0.4s cubic-bezier(0.2, 1, 0.3, 1);
   background-color: transparent !important;
   color: var(--admin-text-muted) !important;
+  border: 1px solid transparent;
 }
 
 :deep(.el-menu-item .el-icon) {
-  font-size: 18px;
-  margin-right: 12px;
+  font-size: 20px;
+  margin-right: 14px;
 }
 
 :deep(.el-menu-item.is-active) {
-  color: var(--admin-primary) !important;
-  background: linear-gradient(90deg, var(--admin-primary-glow), transparent) !important;
-  box-shadow: inset 2px 0 0 var(--admin-primary);
+  color: white !important;
+  background: var(--brand-primary) !important;
+  box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4);
 }
 
-:deep(.el-menu-item:hover) {
-  background-color: var(--admin-border) !important;
+:deep(.el-menu-item:hover:not(.is-active)) {
+  background-color: var(--admin-surface-light) !important;
   color: var(--admin-text-main) !important;
+  transform: translateX(4px);
+  border-color: var(--admin-border);
 }
 
 .aside-footer {
-  padding: 20px 24px;
+  padding: 24px 32px;
   border-top: 1px solid var(--admin-border);
 }
 
 /* --- Header --- */
 .admin-header {
   background: var(--admin-glass);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(24px);
   border-bottom: 1px solid var(--admin-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 32px;
-  height: 70px !important;
+  padding: 0 48px;
+  height: 80px !important;
 }
 
 :deep(.el-breadcrumb__inner) {
@@ -369,7 +379,7 @@ const handleCommand = (command: string) => {
 .pulse-dot {
   width: 8px;
   height: 8px;
-  background: var(--admin-primary);
+  background: var(--admin-success);
   border-radius: 50%;
   position: relative;
 }
@@ -380,7 +390,7 @@ const handleCommand = (command: string) => {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: var(--admin-primary);
+  background: var(--admin-success);
   animation: pulse 2s infinite;
 }
 

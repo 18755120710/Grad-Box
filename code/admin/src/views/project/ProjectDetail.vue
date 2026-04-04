@@ -60,24 +60,34 @@
           <div class="media-section">
             <div class="media-grid">
               <div v-for="(media, index) in form.medias" :key="index" class="media-row">
-                <el-select v-model="media.type" style="width: 120px">
+                <el-select v-model="media.mediaType" style="width: 120px">
                   <el-option label="展示图片" :value="1" />
                   <el-option label="视频演示" :value="2" />
                 </el-select>
-                <el-input v-model="media.url" placeholder="媒体直链 URL (CDN)">
-                  <template #append>
-                    <el-upload
-                      :action="uploadUrl"
-                      :headers="uploadHeaders"
-                      :show-file-list="false"
-                      :on-success="(res: any) => handleMediaUploadSuccess(res, index)"
-                    >
-                      <el-button link type="primary">
-                        <lucide-upload :size="14" />
-                      </el-button>
-                    </el-upload>
-                  </template>
-                </el-input>
+                <div class="media-input-wrapper">
+                  <el-input v-model="media.mediaUrl" placeholder="媒体直链 URL (CDN)">
+                    <template #append>
+                      <el-upload
+                        :action="uploadUrl"
+                        :headers="uploadHeaders"
+                        :show-file-list="false"
+                        :on-success="(res: any) => handleMediaUploadSuccess(res, index)"
+                        :on-progress="(evt: any) => handleMediaProgress(evt, index)"
+                      >
+                        <el-button link type="primary" :disabled="mediaProgress[index] !== undefined && mediaProgress[index] < 100">
+                          <lucide-upload :size="14" />
+                        </el-button>
+                      </el-upload>
+                    </template>
+                  </el-input>
+                  <el-progress 
+                    v-if="mediaProgress[index] !== undefined && mediaProgress[index] < 100"
+                    :percentage="mediaProgress[index]" 
+                    :show-text="false"
+                    stroke-width="2"
+                    class="upload-progress-bar"
+                  />
+                </div>
                 <el-button circle plain type="danger" @click="removeMedia(index)" class="delete-media-btn">
                   <lucide-trash-2 :size="14" />
                 </el-button>
@@ -108,6 +118,7 @@
                 :headers="uploadHeaders"
                 :show-file-list="false"
                 :on-success="handleCoverSuccess"
+                :on-progress="handleCoverProgress"
               >
                 <div class="cover-preview" v-if="form.coverImage">
                   <img :src="form.coverImage" />
@@ -117,8 +128,14 @@
                   </div>
                 </div>
                 <div class="cover-placeholder" v-else>
-                  <lucide-image :size="32" />
-                  <span>点击上传封面</span>
+                  <template v-if="coverProgress > 0 && coverProgress < 100">
+                    <el-progress type="circle" :percentage="coverProgress" :width="60" />
+                    <span class="mt-2">正在同步云端...</span>
+                  </template>
+                  <template v-else>
+                    <lucide-image :size="32" />
+                    <span>上传项目封面图</span>
+                  </template>
                 </div>
               </el-upload>
               <el-input v-model="form.coverImage" placeholder="或手动输入封面直链..." class="mt-4" />
@@ -182,20 +199,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive, nextTick } from 'vue'
+import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ElMessage, type ElInput } from 'element-plus'
 import request from '@/utils/request'
-import { ElMessage, ElInput } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
-import {
-  ChevronLeft as LucideChevronLeft,
-  Save as LucideSave,
-  Image as LucideImage,
-  Plus as LucidePlus,
-  Trash2 as LucideTrash2,
-  Layers as LucideLayers,
-  Edit2 as LucideEdit2,
-  Upload as LucideUpload
+import { 
+  LucideChevronLeft,
+  LucideLayers,
+  LucidePlus,
+  LucideTrash2,
+  LucideImage,
+  LucideUpload,
+  LucideCloudUpload,
+  LucideSave
 } from 'lucide-vue-next'
 
 const route = useRoute()
@@ -226,6 +243,14 @@ const form = reactive({
   status: 1,
   tags: [] as string[],
   medias: [] as any[]
+})
+
+// --- Upload Progress State ---
+const coverProgress = ref(0)
+const mediaProgress = reactive<Record<number, number>>({})
+const isUploading = computed(() => {
+  if (coverProgress.value > 0 && coverProgress.value < 100) return true
+  return Object.values(mediaProgress).some(p => p > 0 && p < 100)
 })
 
 const rules = {
@@ -288,17 +313,30 @@ const handleSave = async () => {
   }
 }
 
-const addMedia = () => form.medias.push({ type: 1, url: '' })
-const removeMedia = (index: number) => form.medias.splice(index, 1)
+const addMedia = () => form.medias.push({ mediaType: 1, mediaUrl: '' })
+const removeMedia = (index: number) => {
+  form.medias.splice(index, 1)
+  delete mediaProgress[index]
+}
+
+const handleCoverProgress = (evt: any) => {
+  coverProgress.value = Math.round(evt.percent)
+}
 
 const handleCoverSuccess = (res: any) => {
   form.coverImage = res.data
+  coverProgress.value = 100
   ElMessage.success('封面上传成功')
 }
 
+const handleMediaProgress = (evt: any, index: number) => {
+  mediaProgress[index] = Math.round(evt.percent)
+}
+
 const handleMediaUploadSuccess = (res: any, index: number) => {
-  form.medias[index].url = res.data
-  ElMessage.success('资源上传成功')
+  form.medias[index].mediaUrl = res.data
+  mediaProgress[index] = 100
+  ElMessage.success('素材上传成功')
 }
 
 // --- Tag Logic ---
@@ -435,6 +473,21 @@ onMounted(() => {
   padding: 8px;
   border-radius: 12px;
   border: 1px solid var(--admin-border);
+}
+
+.media-input-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.upload-progress-bar {
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  padding: 0 4px;
 }
 
 .delete-media-btn:hover {

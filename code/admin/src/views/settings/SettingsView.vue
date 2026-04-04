@@ -85,8 +85,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import axios from '@/utils/request' // Assuming axios instance exists
 import {
   Save as LucideSave,
   Palette as LucidePalette,
@@ -95,23 +96,41 @@ import {
 
 const saving = ref(false)
 
-// --- Mock Config ---
+// --- Config State ---
 const config = reactive({
-  siteTitle: 'GradBox Admin',
-  tagline: 'High Performance Project Hub',
+  siteTitle: '',
+  tagline: '',
   logoUrl: '',
   maintenanceMode: false,
-  userApproval: true,
+  userApproval: false,
   sessionTimeout: 120
 })
 
-const handleSave = () => {
+const fetchConfig = async () => {
+  try {
+    const res = await axios.get('/configs/system')
+    if (res.data.code === 200) {
+      Object.assign(config, res.data.data)
+    }
+  } catch (error) {
+    ElMessage.error('系统预设加载失败')
+  }
+}
+
+onMounted(fetchConfig)
+
+const handleSave = async () => {
   saving.value = true
-  // Mock API call
-  setTimeout(() => {
+  try {
+    const res = await axios.post('/configs/system', config)
+    if (res.data.code === 200) {
+      ElMessage.success('全局预设同步成功，部分变更将在下次刷新生效')
+    }
+  } catch (error) {
+    ElMessage.error('保存全局配置失败')
+  } finally {
     saving.value = false
-    ElMessage.success('全局预设同步成功，部分变更将在下次刷新生效')
-  }, 800)
+  }
 }
 
 const triggerUpload = () => {
