@@ -4,14 +4,39 @@
       <!-- Immersive Header Section -->
       <section class="relative h-[65vh] overflow-hidden bg-profound-black group">
         <div class="absolute inset-0">
-          <img :src="project.coverImage || 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop'" 
-               class="w-full h-full object-cover opacity-20 group-hover:scale-105 transition-transform duration-[2s]" />
-          <div class="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent"></div>
-          <div class="absolute inset-0 bg-gradient-to-r from-profound-black/90 via-profound-black/40 to-transparent"></div>
+          <el-carousel v-if="mediaItems.length > 0" 
+                       trigger="click" 
+                       height="65vh" 
+                       :autoplay="false"
+                       arrow="always" 
+                       class="w-full h-full opacity-95 transition-opacity duration-500 custom-carousel">
+            <el-carousel-item v-for="(item, index) in mediaItems" :key="index">
+              <div class="w-full h-full relative group cursor-pointer overflow-hidden" 
+                   @click="handleMediaClick(item, index)">
+                <video v-if="item.mediaType === 2" 
+                       :src="item.mediaUrl" 
+                       autoplay 
+                       muted 
+                       loop 
+                       playsinline
+                       class="w-full h-full object-cover pointer-events-none" />
+                <img v-else 
+                     :src="item.mediaUrl" 
+                     class="w-full h-full object-cover pointer-events-none" />
+                
+                <!-- Overlay Indicators -->
+                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-profound-black/30">
+                  <PlayCircle v-if="item.mediaType === 2" :size="80" class="text-white drop-shadow-2xl animate-pulse pointer-events-none" />
+                  <Maximize2 v-else :size="56" class="text-white drop-shadow-2xl pointer-events-none" />
+                </div>
+              </div>
+            </el-carousel-item>
+          </el-carousel>
+          <div class="absolute inset-0 bg-profound-black/30 pointer-events-none"></div>
         </div>
 
-        <div class="relative h-full max-w-7xl mx-auto px-6 sm:px-8 flex flex-col justify-center space-y-8">
-          <div class="flex items-center gap-3 animate-fade-in">
+        <div class="relative h-full max-w-7xl mx-auto px-6 sm:px-8 flex flex-col justify-center space-y-8 pointer-events-none">
+          <div class="flex items-center gap-3 animate-fade-in pointer-events-auto">
             <span class="px-5 py-2 bg-primary text-white text-[9px] font-bold uppercase tracking-profound rounded-lg shadow-xl shadow-primary/20">
               {{ project.categoryName || '精品项目' }}
             </span>
@@ -21,11 +46,11 @@
             <span class="text-white/20 font-mono text-[10px] tracking-widest uppercase">REF_ID: #{{ project.id.toString().padStart(6, '0') }}</span>
           </div>
           
-          <h1 class="text-5xl md:text-7xl font-display text-white tracking-tighter-profound leading-[1.0] max-w-5xl animate-fade-in-up uppercase">
+          <h1 class="text-5xl md:text-7xl font-display text-white tracking-tighter-profound leading-[1.0] max-w-5xl animate-fade-in-up uppercase pointer-events-auto">
             {{ project.title }}
           </h1>
 
-          <div class="flex flex-wrap gap-3 items-center animate-fade-in" style="animation-delay: 200ms">
+          <div class="flex flex-wrap gap-3 items-center animate-fade-in pointer-events-auto" style="animation-delay: 200ms">
             <div v-for="tag in techTags" :key="tag" 
                  class="px-5 py-2.5 bg-white/5 backdrop-blur-xl border border-white/10 text-white rounded-xl text-xs font-bold hover:bg-white/20 transition-all cursor-default">
               {{ tag }}
@@ -33,7 +58,7 @@
           </div>
 
           <!-- Quick Stats Overlay -->
-          <div class="flex gap-10 pt-6 text-white/40 font-bold uppercase tracking-profound text-[9px]">
+          <div class="flex gap-10 pt-6 text-white/40 font-bold uppercase tracking-profound text-[9px] pointer-events-auto">
             <div class="flex items-center gap-2"><Eye :size="14" class="text-primary" /> {{ project.viewCount }} Views</div>
             <div class="flex items-center gap-2"><Download :size="14" class="text-primary" /> {{ project.downloadCount || 0 }} Deliveries</div>
             <div class="flex items-center gap-2"><Star :size="14" class="text-primary" /> 4.9 Rating</div>
@@ -138,29 +163,7 @@
                   </form>
                 </div>
 
-                <div v-if="activeTab === 'video'" class="animate-fade-in">
-                   <div v-if="project.medias?.some(m => m.mediaType === 2)" class="space-y-6">
-                    <div v-for="video in project.medias.filter(m => m.mediaType === 2)" :key="video.id" class="aspect-video rounded-3xl overflow-hidden bg-black shadow-2xl">
-                      <video :src="video.mediaUrl" controls class="w-full h-full object-contain"></video>
-                    </div>
-                  </div>
-                  <div v-else class="py-16 text-center space-y-4">
-                     <VideoOff :size="32" class="text-slate-200 mx-auto" />
-                     <p class="text-[10px] uppercase tracking-profound text-slate-400 font-bold">演示视频整备中</p>
-                  </div>
-                </div>
 
-                <div v-if="activeTab === 'media'" class="space-y-8 animate-fade-in">
-                   <div v-if="project.medias?.some(m => m.mediaType === 1)" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div v-for="image in project.medias.filter(m => m.mediaType === 1)" :key="image.id" class="rounded-3xl overflow-hidden shadow-xl border border-slate-100 aspect-video">
-                      <img :src="image.mediaUrl" class="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
-                    </div>
-                  </div>
-                  <div v-else class="py-16 text-center space-y-4">
-                     <Image :size="32" class="text-slate-200 mx-auto" />
-                     <p class="text-[10px] uppercase tracking-profound text-slate-400 font-bold">展示图片整理中</p>
-                  </div>
-                </div>
 
                 <div v-if="activeTab === 'detail'" class="animate-fade-in">
                   <div v-if="project.contentHtml" class="prose prose-slate max-w-none">
@@ -236,6 +239,28 @@
     <div v-else class="min-h-screen flex items-center justify-center">
        <div class="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
     </div>
+
+    <!-- Media Preview Dialog -->
+    <el-dialog v-model="mediaPreviewVisible" 
+               width="100%" 
+               fullscreen
+               destroy-on-close 
+               align-center
+               append-to-body
+               modal-class="media-preview-overlay"
+               class="media-preview-dialog custom-glass-dialog">
+      <div class="h-screen w-screen bg-transparent flex items-center justify-center relative p-12 overflow-hidden" @click="mediaPreviewVisible = false">
+        <div class="max-w-7xl w-full max-h-[85vh] rounded-4xl overflow-hidden shadow-profound border border-white/10 relative group" @click.stop>
+          <video v-if="previewItem?.mediaType === 2" :src="previewItem.mediaUrl" controls autoplay class="w-full h-auto bg-black"></video>
+          <img v-else-if="previewItem?.mediaType === 1" :src="previewItem.mediaUrl" class="w-full h-auto object-contain bg-black/20" />
+          
+          <button @click="mediaPreviewVisible = false" 
+                  class="absolute top-6 right-6 p-4 bg-white/10 hover:bg-white/20 backdrop-blur-2xl rounded-full text-white transition-all z-50 border border-white/10">
+            <X :size="28" />
+          </button>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -243,7 +268,7 @@
 import { 
   Eye, Download, Star, Telescope, Puzzle, Cpu, MessageCircleQuestion, 
   CheckCircle, Smartphone, Check, Zap, UserCheck, X, ShieldCheck, Lock, CheckCircle2, ArrowRight,
-  MonitorDot, Code2, BookOpen, Video, Image, MessageCircle, VideoOff, Database
+  MonitorDot, Code2, BookOpen, Video, Image, MessageCircle, VideoOff, Database, PlayCircle, Maximize2
 } from 'lucide-vue-next'
 import { MdPreview } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
@@ -268,21 +293,45 @@ onMounted(async () => {
 })
 
 // Fetch similar projects
-const { data: recRes } = await useAsyncData(`similar-${route.params.id}`, () => 
+const recRes = project.value?.categoryId ? await useAsyncData(`similar-${route.params.id}`, () => 
   api('/api/projects', { params: { categoryId: project.value?.categoryId, pageSize: 3 } })
-)
+) : { data: ref(null) }
 const similarProjects = computed(() => recRes.value?.data?.records?.filter(p => p.id !== project.value?.id).slice(0, 2) || [])
 
 const techTags = computed(() => project.value?.techStack?.split(',') || ['Academic Excellence', 'Cloud Native'])
 
+const mediaItems = computed(() => {
+  if (!project.value) return []
+  const videos = project.value.medias?.filter(m => m.mediaType === 2) || []
+  const images = project.value.medias?.filter(m => m.mediaType === 1) || []
+  const results = [...videos, ...images]
+  // Fallback to cover image if no media available
+  if (results.length === 0) {
+    results.push({ 
+      mediaType: 1, 
+      mediaUrl: project.value.coverImage || 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop' 
+    })
+  }
+  return results
+})
+
 const tabOptions = computed(() => [
   { id: 'overview', label: '项目总览', icon: Telescope },
   { id: 'detail', label: '深度解析', icon: BookOpen },
-  { id: 'video', label: '视频演示', icon: Video, show: project.value?.medias?.some(m => m.mediaType === 2) },
-  { id: 'media', label: '图片展示', icon: Image, show: project.value?.medias?.some(m => m.mediaType === 1) },
   { id: 'specs', label: '技术细节', icon: Cpu },
   { id: 'ask', label: '在线咨询', icon: MessageCircleQuestion }
 ])
+
+const mediaPreviewVisible = ref(false)
+const previewItem = ref(null)
+
+const handleMediaClick = (item, index) => {
+  previewItem.value = item
+  mediaPreviewVisible.value = true
+}
+
+const imageUrls = computed(() => mediaItems.value.filter(m => m.mediaType === 1).map(m => m.mediaUrl))
+const getImageIndex = (url) => imageUrls.value.indexOf(url)
 
 const groupedTechDetails = computed(() => {
   if (!project.value?.techDetails) return {}
@@ -360,12 +409,62 @@ const handleContact = () => {
 }
 </script>
 
+
+
 <style scoped>
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+:deep(.custom-carousel .el-carousel__arrow) {
+  width: auto;
+  height: auto;
+  background-color: transparent !important;
+  backdrop-filter: none;
+  border: none;
+  color: white !important;
+  font-size: 48px; /* Bigger arrow for better visibility */
+  transition: opacity 0.3s;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+:deep(.custom-carousel .el-carousel__arrow:hover) {
+  opacity: 1;
+}
+</style>
+
+<style>
+/* Global styles for the media preview dialog overlay to ensure frosted glass effect */
+.el-overlay.media-preview-overlay {
+  z-index: 9999 !important;
+  background-color: rgba(0, 0, 0, 0.6) !important; /* Pure black tint for better contrast */
+  backdrop-filter: blur(40px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+}
+
+/* Ensure the full-screen dialog itself is transparent to show the overlay's frosted glass effect */
+.el-dialog.custom-glass-dialog {
+  background: transparent !important;
+  box-shadow: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.custom-glass-dialog .el-dialog__header,
+.custom-glass-dialog .el-dialog__body {
+  padding: 0 !important;
+  background: transparent !important;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-glass-dialog .el-dialog__headerbtn {
+  display: none !important;
 }
 </style>
