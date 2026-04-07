@@ -57,8 +57,6 @@
             </div>
           </div>
 
-          </div>
-          
           <!-- Classification Tags -->
           <div v-if="project.tags" class="flex flex-wrap gap-2 animate-fade-in" style="animation-delay: 150ms">
             <span v-for="tag in project.tags.split(',')" :key="tag" 
