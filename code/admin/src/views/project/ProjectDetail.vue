@@ -84,6 +84,17 @@
               <p class="section-muted-text">在此沉淀项目的详尽描述与技术亮点</p>
             </div>
             <div class="header-extra">
+              <el-upload
+                :auto-upload="false"
+                :show-file-list="false"
+                accept=".md"
+                @change="handlePrdImport"
+                class="prd-import-uploader"
+              >
+                <el-button link type="primary" class="btn-import-prd">
+                  <lucide-file-text :size="14" /> <span>导入需求文档 (Markdown)</span>
+                </el-button>
+              </el-upload>
               <span class="word-count-chip">2026.04 修订版</span>
             </div>
           </div>
@@ -357,7 +368,8 @@ import {
   LucideEdit2,
   LucideArrowLeft,
   LucideLayers,
-  LucideEye
+  LucideEye,
+  LucideFileText
 } from 'lucide-vue-next'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
@@ -589,6 +601,79 @@ const removeTag = (tag: string) => {
   form.tags = form.tags.filter(t => t !== tag)
 }
 
+// --- PRD Import Logic ---
+const handlePrdImport = (file: any) => {
+  const rawFile = file.raw
+  if (!rawFile) return
+  
+  if (!rawFile.name.endsWith('.md')) {
+    return ElMessage.warning('请上传 Markdown 格式的文档 (.md)')
+  }
+
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    const content = e.target?.result as string
+    if (!content) return
+
+    form.contentHtml = content
+    ElMessage.success('需求文档已导入内容区域')
+
+    // Extract summary
+    const summary = extractSummary(content)
+    if (summary) {
+      if (form.description) {
+        ElMessageBox.confirm('检测到文档内容，是否自动覆盖当前的资简要描述？', '智能助手', {
+          confirmButtonText: '覆盖',
+          cancelButtonText: '保留',
+          type: 'info'
+        }).then(() => {
+          form.description = summary
+          ElMessage.success('摘要已智能同步')
+        }).catch(() => {})
+      } else {
+        form.description = summary
+        ElMessage.success('摘要已智能同步')
+      }
+    }
+  }
+  reader.readAsText(rawFile)
+}
+
+const extractSummary = (content: string) => {
+  // 1. Remove YAML frontmatter if exists
+  let text = content.replace(/^---[\s\S]*?---/, '')
+  // 2. Remove markdown headers
+  text = text.replace(/^#+.*$/gm, '')
+  // 3. Remove images and links [text](url) -> text
+  text = text.replace(/!\[.*?\]\(.*?\)/g, '')
+  text = text.replace(/\[(.*?)\]\(.*?\)/g, '$1')
+  // 4. Remove HTML tags
+  text = text.replace(/<[^>]*>/g, '')
+  // 5. Remove bold/italic markers
+  text = text.replace(/[*_]{1,3}/g, '')
+  // 6. Remove blockquotes
+  text = text.replace(/^\s*>\s*/gm, '')
+  // 7. Remove code blocks
+  text = text.replace(/```[\s\S]*?```/g, '')
+  text = text.replace(/`.*?`/g, '')
+  
+  // Get first non-empty paragraph
+  const paragraphs = text.split('\n')
+    .map(p => p.trim())
+    .filter(p => p.length > 20) // Require a decent length paragraph
+  
+  if (paragraphs.length > 0) {
+    const firstParagraph = paragraphs[0]
+    if (!firstParagraph) return ''
+    let summaryText = firstParagraph
+    if (firstParagraph.length > 120) {
+      summaryText = firstParagraph.substring(0, 117) + '...'
+    }
+    return summaryText
+  }
+  return ''
+}
+
 onMounted(() => {
   loadCategories()
   loadProject()
@@ -596,6 +681,35 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.header-extra {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.btn-import-prd {
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--admin-primary);
+  background: rgba(var(--admin-primary-rgb), 0.05);
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.3s;
+}
+
+.btn-import-prd:hover {
+  background: rgba(var(--admin-primary-rgb), 0.1);
+  transform: translateY(-1px);
+}
+
+.prd-import-uploader :deep(.el-upload) {
+  display: flex;
+  align-items: center;
+}
+
 .project-detail-wrapper {
   animation: canvas-fade 0.8s cubic-bezier(0.16, 1, 0.3, 1);
   padding: 0 40px 100px;
