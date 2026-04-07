@@ -61,7 +61,7 @@
           <div v-if="project.tags" class="flex flex-wrap gap-2 animate-fade-in" style="animation-delay: 150ms">
             <span v-for="tag in project.tags.split(',')" :key="tag" 
                   class="px-4 py-1.5 bg-primary/20 border border-primary/30 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider backdrop-blur-md hover:bg-primary/40 transition-colors cursor-default">
-              # {{ tag }}
+              {{ tag }}
             </span>
           </div>
           
@@ -132,25 +132,53 @@
                   </div>
                 </div>
 
-                <div v-if="activeTab === 'specs'" class="space-y-10 animate-fade-in">
-                  <div v-if="project.techDetails && project.techDetails.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div v-for="(group, name) in groupedTechDetails" :key="name" 
-                         class="p-8 bg-slate-50 border border-slate-100 rounded-4xl space-y-5">
-                      <h4 class="text-sm font-bold text-profound-black flex items-center gap-2 uppercase tracking-tight">
-                        <component :is="getTechIcon(name)" :size="16" class="text-primary" />
-                        {{ name }}
-                      </h4>
-                      <div class="flex flex-wrap gap-2">
-                        <span v-for="item in group" :key="item.itemName" 
-                              class="px-4 py-2 bg-white border border-slate-100 rounded-xl text-[10px] font-bold text-slate-600 shadow-sm">
-                          {{ item.itemName }}
-                        </span>
+                <div v-if="activeTab === 'detail'" class="space-y-12 animate-fade-in">
+                  <!-- Unified Tech Specs Header -->
+                  <div class="space-y-6">
+                    <div class="flex items-center gap-3">
+                      <div class="w-1.5 h-8 bg-primary rounded-full"></div>
+                      <h3 class="text-2xl font-display text-profound-black uppercase">核心技术架构</h3>
+                    </div>
+                    
+                    <div v-if="project.techDetails && project.techDetails.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div v-for="(group, name) in groupedTechDetails" :key="name" 
+                           class="p-8 bg-slate-50 border border-slate-100 rounded-4xl space-y-5 hover:border-primary/20 transition-colors">
+                        <h4 class="text-sm font-bold text-profound-black flex items-center gap-2 uppercase tracking-tight">
+                          <component :is="getTechIcon(name)" :size="16" class="text-primary" />
+                          {{ name }}
+                        </h4>
+                        <div class="flex flex-wrap gap-2">
+                          <span v-for="item in group" :key="item.itemName" 
+                                class="px-4 py-2 bg-white border border-slate-100 rounded-xl text-[10px] font-bold text-slate-600 shadow-sm">
+                            {{ item.itemName }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div v-else class="flex flex-wrap gap-3">
+                      <div v-for="tag in techTags" :key="tag" 
+                           class="px-6 py-3 bg-slate-50 border border-slate-200 text-profound-black rounded-2xl text-[10px] font-bold uppercase tracking-wider animate-pulse-slow">
+                        {{ tag }}
                       </div>
                     </div>
                   </div>
-                  <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-8 text-center py-10 opacity-30">
-                     <Cpu :size="40" class="mx-auto col-span-2" />
-                     <p class="font-bold uppercase tracking-profound text-[10px] col-span-2">技术参数收录中</p>
+
+                  <div class="h-px bg-slate-100 w-full"></div>
+
+                  <!-- Deep Analysis Content -->
+                  <div class="space-y-6">
+                    <div class="flex items-center gap-3">
+                      <div class="w-1.5 h-8 bg-primary rounded-full"></div>
+                      <h3 class="text-2xl font-display text-profound-black uppercase">深度原理解析</h3>
+                    </div>
+                    
+                    <div v-if="project.contentHtml" class="prose prose-slate max-w-none prose-img:rounded-3xl prose-headings:font-display prose-headings:uppercase">
+                      <md-preview :modelValue="project.contentHtml" />
+                    </div>
+                    <div v-else class="py-16 text-center border-2 border-dashed border-slate-100 rounded-4xl space-y-4">
+                       <BookOpen :size="32" class="text-slate-200 mx-auto" />
+                       <p class="text-[10px] uppercase tracking-profound text-slate-400 font-bold">深度描述编写中</p>
+                    </div>
                   </div>
                 </div>
 
@@ -169,18 +197,6 @@
                       <MessageCircleQuestion :size="18" class="group-hover:rotate-12 transition-transform" /> {{ submittingConsult ? '正在发送...' : '确认提交' }}
                     </button>
                   </form>
-                </div>
-
-
-
-                <div v-if="activeTab === 'detail'" class="animate-fade-in">
-                  <div v-if="project.contentHtml" class="prose prose-slate max-w-none">
-                    <md-preview :modelValue="project.contentHtml" />
-                  </div>
-                  <div v-else class="py-16 text-center space-y-4">
-                     <BookOpen :size="32" class="text-slate-200 mx-auto" />
-                     <p class="text-[10px] uppercase tracking-profound text-slate-400 font-bold">深度描述编写中</p>
-                  </div>
                 </div>
               </div>
             </div>
@@ -326,7 +342,6 @@ const mediaItems = computed(() => {
 const tabOptions = computed(() => [
   { id: 'overview', label: '项目总览', icon: Telescope },
   { id: 'detail', label: '深度解析', icon: BookOpen },
-  { id: 'specs', label: '技术细节', icon: Cpu },
   { id: 'ask', label: '在线咨询', icon: MessageCircleQuestion }
 ])
 
