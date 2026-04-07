@@ -2,122 +2,196 @@
   <div class="project-detail-wrapper" v-loading="loading">
     <!-- Breadcrumb & Header -->
     <div class="view-header">
-      <div class="breadcrumb-nav">
+      <div class="header-left">
         <el-button link @click="$router.push('/projects')" class="back-btn">
-          <lucide-chevron-left :size="18" /> 返回档案库
+          <lucide-arrow-left :size="16" /> 归档概览
         </el-button>
-      </div>
-      <div class="header-main">
-        <h2 class="view-title">{{ isEdit ? '编辑项目资产' : '录入新资产' }}</h2>
-        <div class="header-ops">
-          <el-button class="oled-btn-outline" @click="$router.push('/projects')">放弃变更</el-button>
-          <el-button type="primary" class="oled-btn-primary" @click="handleSave" :loading="submitting">
-            <lucide-save :size="16" /> 固化资产数据
-          </el-button>
+        <div class="header-breadcrumb-lite">
+          <span class="crumb-separator">/</span>
+          <span class="crumb-current">{{ isEdit ? '校准资产详情' : '编目新资产' }}</span>
         </div>
+      </div>
+      <div class="header-ops">
+        <el-button class="btn-minimal-outline" @click="$router.push('/projects')">放弃变更</el-button>
+        <el-button type="primary" class="oled-btn-primary handle-save-btn" @click="handleSave" :loading="submitting">
+          <lucide-save :size="16" /> 固化资产数据
+        </el-button>
       </div>
     </div>
 
-    <!-- Main Form Grid -->
-    <div class="detail-grid">
-      <!-- Left Panel: Core Content -->
-      <div class="panel-left">
-        <div class="glass-card form-section">
-          <div class="section-title">核心属性</div>
-          <el-form :model="form" :rules="rules" ref="formRef" label-position="top">
-            <el-form-item label="项目标题 (Title)" prop="title">
-              <el-input v-model="form.title" placeholder="输入极具吸引力的项目名称..." class="large-input" />
-            </el-form-item>
+    <!-- Seamless Canvas Layout -->
+    <div class="seamless-canvas">
+      <!-- Unified Main Column -->
+      <div class="canvas-main-flow">
+        
+        <!-- Section: Primary Identity -->
+        <section class="canvas-section hero-section">
+          <div class="section-indicator">01 . IDENTITY</div>
+          <el-form :model="form" :rules="rules" ref="formRef" label-position="top" class="borderless-form">
+            <div class="title-headline">
+              <el-form-item prop="title" class="no-label-item">
+                <el-input 
+                  v-model="form.title" 
+                  placeholder="项目名称 / 关键命题..." 
+                  class="headline-input"
+                  resize="none"
+                  autosize
+                />
+              </el-form-item>
+            </div>
             
-            <div class="row-flex">
-              <el-form-item label="所属分类" prop="categoryId" class="flex-1">
-                <el-select v-model="form.categoryId" placeholder="选择分类路径" class="full-width">
+            <div class="meta-row-seamless">
+              <div class="meta-item">
+                <label>所属分类</label>
+                <el-select v-model="form.categoryId" placeholder="选择路径" class="seamless-select">
                   <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
                 </el-select>
-              </el-form-item>
-              <el-form-item label="展示类型" class="flex-1">
-                <el-input v-model="form.type" placeholder="如: 全栈开发, 组件库" />
-              </el-form-item>
-              <el-form-item label="技术栈" class="flex-2">
-                <el-input v-model="form.techStack" placeholder="Vue3, SpringBoot, MyBatis..." />
-              </el-form-item>
+              </div>
+              <div class="meta-item">
+                <label>呈现类型</label>
+                <el-input v-model="form.type" placeholder="如: Web App" class="seamless-input" />
+              </div>
+              <div class="meta-item flex-auto">
+                <label>核心技术栈</label>
+                <el-input v-model="form.techStack" placeholder="主要技术组件..." class="seamless-input tech-font">
+                  <template #prefix>
+                    <div class="tech-icon-box"><lucide-layers :size="12" /></div>
+                  </template>
+                </el-input>
+              </div>
             </div>
-
-            <el-form-item label="项目深度描述 (Rich Content)">
-              <md-editor 
-                v-model="form.contentHtml" 
-                placeholder="在此编写详细的项目介绍、功能点及技术实现逻辑..." 
-                class="monochrome-editor"
-                language="zh-CN"
-                :toolbars="[
-                  'bold', 'italic', 'strikeThrough', '-', 'title', 'sub', 'sup', 'quote', 'unorderedList', 'orderedList', 'task', '-', 'codeRow', 'code', 'link', 'image', 'table', 'mermaid', 'katex', '-', 'revoke', 'next', 'save', '=', 'pageFullscreen', 'fullscreen', 'preview', 'htmlPreview'
-                ]"
-              />
-            </el-form-item>
           </el-form>
-        </div>
+        </section>
 
-        <div class="glass-card form-section">
-          <div class="section-title">展示资源流 (Gallery & Media)</div>
-          <div class="media-section">
-            <div class="media-grid">
-              <div v-for="(media, index) in form.medias" :key="index" class="media-row">
-                <el-select v-model="media.mediaType" style="width: 120px">
-                  <el-option label="展示图片" :value="1" />
-                  <el-option label="视频演示" :value="2" />
-                </el-select>
-                <div class="media-input-wrapper">
-                  <el-input v-model="media.mediaUrl" placeholder="媒体直链 URL (CDN)">
-                    <template #append>
-                      <el-upload
-                        :action="uploadUrl"
-                        :headers="uploadHeaders"
-                        :show-file-list="false"
-                        :before-upload="() => handleMediaBeforeUpload(index)"
-                        :on-success="(res: any) => handleMediaUploadSuccess(res, index)"
-                        :on-progress="(evt: any) => handleMediaProgress(evt, index)"
-                        :on-error="() => handleMediaError(index)"
-                      >
-                        <el-button link type="primary" :disabled="mediaProgress[index] > 0 && mediaProgress[index] < 100">
-                          <lucide-upload :size="14" />
-                        </el-button>
-                      </el-upload>
-                    </template>
-                  </el-input>
-                  <el-progress 
-                    v-if="mediaProgress[index] > 0 && mediaProgress[index] < 100"
-                    :percentage="mediaProgress[index]" 
-                    :show-text="false"
-                    stroke-width="2"
-                    class="upload-progress-bar"
-                  />
-                </div>
-                <el-button circle plain type="danger" @click="removeMedia(index)" class="delete-media-btn">
-                  <lucide-trash-2 :size="14" />
-                </el-button>
-              </div>
-              <div v-if="form.medias.length === 0" class="empty-media">
-                <lucide-layers :size="24" />
-                <span>暂无追加展示资源</span>
-              </div>
+        <div class="canvas-divider"></div>
+
+        <!-- Section: Rich Content -->
+        <section class="canvas-section editor-section">
+          <div class="section-indicator">02 . DOCUMENTATION</div>
+          <div class="section-header-seamless">
+            <div class="header-main-info">
+              <h3 class="section-heading-text">深度解析</h3>
+              <p class="section-muted-text">在此沉淀项目的详尽描述与技术亮点</p>
             </div>
-            <el-button link type="primary" @click="addMedia" class="mt-4 add-media-btn">
-              <lucide-plus :size="16" class="mr-1" /> 追加展示资源
+            <div class="header-extra">
+              <span class="word-count-chip">MARCH 2024 REV</span>
+            </div>
+          </div>
+          <div class="seamless-editor-wrapper">
+            <md-editor 
+              v-model="form.contentHtml" 
+              placeholder="Start drafting..." 
+              class="distilled-editor"
+              language="zh-CN"
+              :toolbars="[
+                'bold', 'italic', 'strikeThrough', '-', 'title', 'sub', 'sup', 'quote', 'unorderedList', 'orderedList', 'task', '-', 'codeRow', 'code', 'link', 'image', 'table', 'mermaid', 'katex', '-', 'revoke', 'next', 'save', '=', 'pageFullscreen', 'fullscreen', 'preview', 'htmlPreview'
+              ]"
+            />
+          </div>
+        </section>
+
+        <div class="canvas-divider"></div>
+
+        <!-- Section: Gallery -->
+        <section class="canvas-section gallery-section-seamless">
+          <div class="section-indicator">03 . ASSETS</div>
+          <div class="section-header-seamless flex-between">
+            <div class="title-group">
+              <h3 class="section-heading-text">媒体资产流</h3>
+              <p class="section-muted-text">管理展示图片、演示视频等扩展资源</p>
+            </div>
+            <el-button link type="primary" @click="addMedia" class="btn-seamless-add">
+              <lucide-plus-circle :size="16" /> <span>追加新素材</span>
             </el-button>
           </div>
-        </div>
+
+          <div class="asset-flow-container">
+            <TransitionGroup name="stagger-list" tag="div" class="asset-grid-seamless">
+              <div v-for="(media, index) in form.medias" :key="index" class="asset-strip-item">
+                <div class="asset-type-indicator" :class="{ 'is-video': media.mediaType === 2 }">
+                  <div class="indicator-inner">
+                    <lucide-image v-if="media.mediaType === 1" :size="14" />
+                    <lucide-play v-else :size="14" />
+                  </div>
+                </div>
+                
+                <div class="asset-config-row">
+                  <el-select v-model="media.mediaType" class="type-mini-selector">
+                    <el-option label="IMG" :value="1" />
+                    <el-option label="VOD" :value="2" />
+                  </el-select>
+                  
+                  <div class="asset-url-field">
+                    <el-input v-model="media.mediaUrl" placeholder="输入直链或点击上传..." class="input-minimal">
+                      <template #append>
+                        <el-upload
+                          :action="uploadUrl"
+                          :headers="uploadHeaders"
+                          :show-file-list="false"
+                          :before-upload="() => handleMediaBeforeUpload(index)"
+                          :on-success="(res: any) => handleMediaUploadSuccess(res, index)"
+                          :on-progress="(evt: any) => handleMediaProgress(evt, index)"
+                          :on-error="() => handleMediaError(index)"
+                        >
+                          <el-button link :disabled="(mediaProgress[index] ?? 0) > 0 && (mediaProgress[index] ?? 0) < 100" class="upload-trigger-btn">
+                            <lucide-cloud-upload :size="14" />
+                          </el-button>
+                        </el-upload>
+                      </template>
+                    </el-input>
+                    <div v-if="(mediaProgress[index] ?? 0) > 0 && (mediaProgress[index] ?? 0) < 100" class="progress-bar-nano">
+                      <div class="fill" :style="{ width: mediaProgress[index] + '%' }"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="asset-preview-box" :class="{ 'has-url': !!media.mediaUrl }">
+                  <template v-if="media.mediaUrl">
+                    <el-image 
+                      v-if="media.mediaType === 1" 
+                      :src="media.mediaUrl" 
+                      fit="cover" 
+                      class="thumb-img" 
+                      :preview-src-list="[media.mediaUrl]"
+                    />
+                    <div v-else class="video-preview-placeholder">
+                      <lucide-monitor-play :size="14" />
+                      <span class="preview-label">VIDEO</span>
+                    </div>
+                  </template>
+                  <div v-else class="empty-preview">
+                    <lucide-inbox :size="12" />
+                  </div>
+                </div>
+
+                <el-button circle class="btn-item-delete" @click="removeMedia(index)">
+                  <lucide-x :size="14" />
+                </el-button>
+              </div>
+            </TransitionGroup>
+
+            <div v-if="form.medias.length === 0" class="canvas-empty-state">
+              <div class="empty-icon-ring">
+                <lucide-inbox :size="24" />
+              </div>
+              <div class="empty-text">
+                <span class="primary-msg">尚未收录展示素材</span>
+                <span class="secondary-msg">点击上方按钮追加图片或视频资产</span>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
 
-      <!-- Right Panel: Media & Status -->
-      <div class="panel-right">
-        <div class="glass-card form-section sticky-section">
-          <div class="section-title">封面与配置</div>
+      <!-- Right Support Stream -->
+      <aside class="canvas-support-stream">
+        <div class="sticky-support-panel">
           
-          <div class="media-upload-area">
-            <label>项目主封面 (Cover Image)</label>
-            <div class="cover-input-box">
+          <div class="support-block cover-block">
+            <h4 class="support-title">Master View</h4>
+            <div class="seamless-cover-uploader">
               <el-upload
-                class="cover-uploader"
+                class="uploader-canvas"
                 :action="uploadUrl"
                 :headers="uploadHeaders"
                 :show-file-list="false"
@@ -126,86 +200,103 @@
                 :on-progress="handleCoverProgress"
                 :on-error="handleCoverError"
               >
-                <div class="cover-preview" v-if="form.coverImage">
-                  <img :src="form.coverImage" />
-                  <div class="cover-mask">
-                    <lucide-upload :size="24" />
-                    <span>更换封面图</span>
+                <div class="canvas-cover-preview" v-if="form.coverImage" :style="{ backgroundImage: `url(${form.coverImage})` }">
+                  <div class="cover-overlay-minimal">
+                    <div class="overlay-action-btn">
+                      <lucide-edit-2 :size="16" />
+                      <span>更换封面</span>
+                    </div>
                   </div>
                 </div>
-                <div class="cover-placeholder" v-else>
+                <div class="canvas-cover-placeholder" v-else :class="{ 'loading': coverProgress > 0 && coverProgress < 100 }">
                   <template v-if="coverProgress > 0 && coverProgress < 100">
-                    <el-progress type="circle" :percentage="coverProgress" :width="60" />
-                    <span class="mt-2">正在同步云端...</span>
+                    <div class="loading-ring"></div>
+                    <span class="p-text">{{ coverProgress }}%</span>
                   </template>
                   <template v-else>
-                    <lucide-image :size="32" />
-                    <span>上传项目封面图</span>
+                    <div class="placeholder-icon-box">
+                      <lucide-plus :size="24" />
+                    </div>
+                    <span class="p-tip">INIT COVER</span>
                   </template>
                 </div>
               </el-upload>
-              <div class="cover-input-group mt-4">
-                <el-input v-model="form.coverImage" placeholder="或手动输入封面直链..." class="flex-1" />
-                <el-button v-if="form.coverImage" type="danger" plain @click="handleDeleteCover">
-                  <lucide-trash-2 :size="14" />
+            </div>
+          </div>
+
+          <div class="support-block config-block">
+            <h4 class="support-title">Economics</h4>
+            <div class="price-strip-v2">
+              <div class="strip-label-row">
+                <span class="strip-label">项目标价</span>
+                <span class="currency-code">CNY / RENMINBI</span>
+              </div>
+              <div class="input-row-v2">
+                <el-input-number v-model="form.price" :precision="2" :step="10" controls-position="right" class="reset-number-v2" />
+                <div class="unit-box">¥</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="support-block tags-block">
+            <h4 class="support-title">Classification</h4>
+            <div class="seamless-tag-cloud-v2">
+              <TransitionGroup name="tag-pop">
+                <el-tag 
+                  v-for="tag in form.tags" 
+                  :key="tag" 
+                  closable 
+                  @close="removeTag(tag)"
+                  class="flat-tag-v2"
+                >
+                  {{ tag }}
+                </el-tag>
+              </TransitionGroup>
+              <div class="tag-input-trigger-v2">
+                <el-input
+                  v-if="inputVisible"
+                  ref="InputRef"
+                  v-model="inputValue"
+                  size="small"
+                  @keyup.enter="handleInputConfirm"
+                  @blur="handleInputConfirm"
+                  class="input-seamless-tag-v2"
+                />
+                <el-button v-else link @click="showInput" class="btn-tag-plus-v2">
+                  <lucide-plus-circle :size="14" /> <span>追加分类标签</span>
                 </el-button>
               </div>
             </div>
           </div>
 
-          <div class="form-item-group">
-            <label>价格定位 (Price)</label>
-            <el-input-number v-model="form.price" :precision="2" :step="10" class="full-width" controls-position="right" />
-          </div>
-
-          <div class="tag-manager">
-            <label>特性标签 (Tags)</label>
-            <div class="tag-inputs">
-              <el-tag 
-                v-for="tag in form.tags" 
-                :key="tag" 
-                closable 
-                @close="removeTag(tag)"
-                class="oled-tag"
-              >
-                {{ tag }}
-              </el-tag>
-              <el-input
-                v-if="inputVisible"
-                ref="InputRef"
-                v-model="inputValue"
-                size="small"
-                @keyup.enter="handleInputConfirm"
-                @blur="handleInputConfirm"
-                class="mini-tag-input"
-              />
-              <el-button v-else size="small" @click="showInput" class="oled-btn-text">+ 新增</el-button>
-            </div>
-          </div>
-
-          <div class="status-config">
-            <label>发布流通状态 (Status)</label>
-            <div class="status-toggle">
-              <span :class="{ active: form.status === 1 }">公开上架</span>
+          <div class="support-block status-block-v2">
+            <div class="status-indicator-card" :class="{ 'is-online': form.status === 1 }">
+              <div class="status-info-row">
+                <div class="status-dot-v2"></div>
+                <span class="status-text">{{ form.status === 1 ? '公开发布中' : '仓库封存中' }}</span>
+              </div>
               <el-switch 
                 v-model="form.status" 
                 :active-value="1" 
                 :inactive-value="0" 
-                active-color="var(--admin-primary)"
+                size="small"
+                class="status-switch-v2"
               />
-              <span :class="{ active: form.status === 0 }">仓库封存</span>
+            </div>
+          </div>
+
+          <div class="support-block links-block">
+            <h4 class="support-title">External Links</h4>
+            <div class="link-field-v2">
+              <el-input v-model="form.demoUrl" placeholder="Live Demo URL..." class="input-minimal-link">
+                <template #prefix><lucide-link :size="12" /></template>
+              </el-input>
             </div>
           </div>
         </div>
-
-        <div class="glass-card form-section mt-6">
-          <div class="section-title">外部链路</div>
-          <el-form-item label="演示地址 (Demo URL)">
-            <el-input v-model="form.demoUrl" placeholder="https://..." />
-          </el-form-item>
-        </div>
-      </div>
+      </aside>
     </div>
+
   </div>
 </template>
 
@@ -216,14 +307,22 @@ import { ElMessage, ElMessageBox, type ElInput } from 'element-plus'
 import request from '@/utils/request'
 import { useAuthStore } from '@/stores/auth'
 import { 
-  LucideChevronLeft,
-  LucideLayers,
-  LucidePlus,
-  LucideTrash2,
   LucideImage,
   LucideUpload,
+  LucideUploadCloud,
   LucideCloudUpload,
-  LucideSave
+  LucidePlus,
+  LucidePlusCircle,
+  LucidePlay,
+  LucideLink,
+  LucideTrash2,
+  LucideSave,
+  LucideX,
+  LucideInbox,
+  LucideMonitorPlay,
+  LucideEdit2,
+  LucideArrowLeft,
+  LucideLayers
 } from 'lucide-vue-next'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
@@ -424,271 +523,760 @@ onMounted(() => {
 
 <style scoped>
 .project-detail-wrapper {
-  animation: slide-up 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  padding-bottom: 60px;
+  animation: canvas-fade 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0 40px 100px;
+  max-width: 1400px;
+  margin: 0 auto;
+  color: var(--admin-text-main);
 }
 
-/* --- Header --- */
+/* --- Header & Navigation --- */
 .view-header {
-  margin-bottom: 32px;
+  height: 80px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .back-btn {
   color: var(--admin-text-muted);
-  font-size: 14px;
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.header-main {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.view-title {
-  font-size: 32px;
-  font-weight: 900;
-  color: var(--admin-text-main);
-  letter-spacing: -1.5px;
-}
-
-.header-ops { display: flex; gap: 16px; }
-
-/* --- Grid Layout --- */
-.detail-grid {
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: 24px;
-  align-items: start;
-}
-
-.form-section {
-  padding: 32px;
-}
-
-.mt-6 { margin-top: 24px; }
-
-.section-title {
-  font-size: 12px;
-  font-weight: 800;
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 0.5px;
+  transition: all 0.3s;
+  padding: 0;
+}
+
+.back-btn:hover {
   color: var(--admin-primary);
-  margin-bottom: 24px;
+  transform: translateX(-4px);
+}
+
+.header-breadcrumb-lite {
   display: flex;
   align-items: center;
   gap: 12px;
+  color: var(--admin-text-muted);
+  font-size: 13px;
+  font-weight: 500;
 }
 
-.section-title::after {
+.crumb-separator {
+  opacity: 0.3;
+  font-family: var(--font-data);
+}
+
+.crumb-current {
+  color: var(--admin-text-secondary);
+}
+
+.header-ops {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.btn-minimal-outline {
+  background: transparent !important;
+  border: 1px solid var(--admin-border) !important;
+  color: var(--admin-text-secondary) !important;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.handle-save-btn {
+  border-radius: 8px;
+  padding: 10px 24px;
+}
+
+/* --- Seamless Canvas Layout --- */
+.seamless-canvas {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 80px;
+  position: relative;
+  margin-top: 40px;
+}
+
+.canvas-main-flow {
+  display: flex;
+  flex-direction: column;
+}
+
+.canvas-section {
+  position: relative;
+  padding-bottom: 80px;
+}
+
+.section-indicator {
+  position: absolute;
+  left: -80px;
+  top: 10px;
+  font-family: var(--font-data);
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--admin-primary);
+  opacity: 0.3;
+  white-space: nowrap;
+  transform: rotate(-90deg) translateX(-100%);
+  transform-origin: top left;
+  letter-spacing: 1px;
+}
+
+.canvas-divider {
+  height: 1px;
+  background: linear-gradient(90deg, var(--admin-border) 0%, transparent 100%);
+  margin-bottom: 80px;
+}
+
+/* --- Identity Section --- */
+.hero-section {
+  padding-top: 0;
+}
+
+.no-label-item :deep(.el-form-item__label) {
+  display: none;
+}
+
+.headline-input :deep(.el-input__wrapper) {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0;
+}
+
+.headline-input :deep(.el-input__inner) {
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  line-height: 1.1;
+  color: var(--admin-text-main);
+  padding: 0;
+}
+
+.headline-input :deep(.el-input__inner::placeholder) {
+  color: var(--admin-border);
+}
+
+.meta-row-seamless {
+  display: flex;
+  gap: 48px;
+  margin-top: 32px;
+  align-items: flex-end;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.meta-item label {
+  font-family: var(--font-data);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--admin-text-muted);
+  letter-spacing: 0.5px;
+}
+
+.meta-item.flex-auto {
+  flex: 1;
+}
+
+.seamless-select :deep(.el-select__wrapper),
+.seamless-input :deep(.el-input__wrapper) {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-bottom: 1px solid var(--admin-border) !important;
+  border-radius: 0;
+  padding: 4px 0;
+  transition: all 0.3s;
+}
+
+.seamless-select :deep(.el-select__wrapper):hover,
+.seamless-input :deep(.el-input__wrapper):hover {
+  border-color: var(--admin-primary) !important;
+}
+
+.tech-font :deep(.el-input__inner) {
+  font-family: var(--font-data);
+  color: var(--admin-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.tech-icon-box {
+  color: var(--admin-primary);
+  opacity: 0.6;
+}
+
+/* --- Documentation Section --- */
+.section-header-seamless {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 32px;
+}
+
+.section-heading-text {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.5px;
+}
+
+.section-muted-text {
+  font-size: 13px;
+  color: var(--admin-text-muted);
+  margin: 0;
+}
+
+.word-count-chip {
+  font-family: var(--font-data);
+  font-size: 9px;
+  font-weight: 800;
+  background: var(--admin-surface-light);
+  color: var(--admin-text-muted);
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+}
+
+.seamless-editor-wrapper {
+  background: var(--admin-surface);
+  border-radius: 20px;
+  padding: 1px;
+  border: 1px solid var(--admin-border);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+  overflow: hidden;
+}
+
+.distilled-editor {
+  height: 520px;
+  border: none !important;
+  --md-bk-color: transparent;
+}
+
+/* --- Assets Flow --- */
+.btn-seamless-add {
+  font-weight: 700;
+  font-family: var(--font-data);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.asset-flow-container {
+  margin-top: 32px;
+}
+
+.asset-grid-seamless {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.asset-strip-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 10px 16px;
+  border-radius: 14px;
+  background: var(--admin-surface-light);
+  border: 1px solid var(--admin-border);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.asset-strip-item:hover {
+  background: var(--admin-surface);
+  border-color: var(--admin-primary-glow);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px var(--admin-primary-glow);
+}
+
+.asset-type-indicator {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--admin-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.indicator-inner {
+  color: var(--admin-text-muted);
+}
+
+.is-video .indicator-inner {
+  color: var(--admin-warning);
+}
+
+.asset-config-row {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.type-mini-selector {
+  width: 76px;
+}
+
+.type-mini-selector :deep(.el-select__wrapper) {
+  background: transparent !important;
+  box-shadow: none !important;
+  font-family: var(--font-data);
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.asset-url-field {
+  flex: 1;
+  position: relative;
+}
+
+.input-minimal :deep(.el-input__wrapper) {
+  background: transparent !important;
+  box-shadow: none !important;
+  font-family: var(--font-data);
+  font-size: 12px;
+  border-bottom: 1px solid var(--admin-border);
+  border-radius: 0;
+  padding: 0;
+}
+
+.upload-trigger-btn {
+  color: var(--admin-primary);
+  opacity: 0.7;
+  transition: 0.3s;
+}
+
+.upload-trigger-btn:hover {
+  opacity: 1;
+}
+
+.progress-bar-nano {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--admin-border);
+}
+
+.progress-bar-nano .fill {
+  height: 100%;
+  background: var(--admin-primary);
+  transition: width 0.3s;
+}
+
+.asset-preview-box {
+  width: 72px;
+  height: 40px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--admin-bg);
+  border: 1px solid var(--admin-border);
+}
+
+.asset-preview-box.has-url {
+  border-color: var(--admin-primary-glow);
+}
+
+.thumb-img {
+  width: 100%;
+  height: 100%;
+  transition: 0.3s;
+}
+
+.thumb-img:hover {
+  transform: scale(1.1);
+}
+
+.video-preview-placeholder {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--admin-surface-light);
+  color: var(--admin-primary);
+  gap: 2px;
+}
+
+.preview-label {
+  font-family: var(--font-data);
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.empty-preview {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--admin-border);
+}
+
+.btn-item-delete {
+  border: none !important;
+  background: transparent !important;
+  color: var(--admin-text-muted);
+  opacity: 0.4;
+  transition: all 0.3s;
+}
+
+.btn-item-delete:hover {
+  opacity: 1;
+  color: var(--admin-error);
+  background: rgba(var(--el-color-danger-rgb), 0.1) !important;
+}
+
+/* --- Empty State --- */
+.canvas-empty-state {
+  padding: 60px 40px;
+  border-radius: 20px;
+  border: 1px dashed var(--admin-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 20px;
+}
+
+.empty-icon-ring {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--admin-surface-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--admin-border);
+}
+
+.empty-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.primary-msg {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--admin-text-secondary);
+}
+
+.secondary-msg {
+  font-size: 12px;
+  color: var(--admin-text-muted);
+}
+
+/* --- Sidebar Support Stream --- */
+.canvas-support-stream {
+  padding-top: 0;
+}
+
+.sticky-support-panel {
+  position: sticky;
+  top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.support-block {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.support-title {
+  font-family: var(--font-data);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--admin-text-muted);
+  letter-spacing: 1.5px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.support-title::after {
   content: '';
   flex: 1;
   height: 1px;
   background: var(--admin-border);
 }
 
-/* --- Core Form Elements --- */
-.large-input :deep(.el-input__wrapper) {
-  font-size: 20px;
-  padding: 10px 16px;
-  font-weight: 700;
-  background: var(--admin-bg) !important;
-}
-
-.row-flex { display: flex; gap: 20px; flex-wrap: wrap; }
-.flex-1 { flex: 1; min-width: 150px; }
-.flex-2 { flex: 2; min-width: 200px; }
-.full-width { width: 100%; }
-
-.monochrome-editor {
-  --md-bk-color: var(--admin-surface-light);
-  height: 500px;
-  border: 1px solid var(--admin-border);
-  border-radius: 12px;
-}
-
-:deep(.md-editor) {
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-/* --- Media Section --- */
-.media-section {
-  display: flex;
-  flex-direction: column;
-}
-
-.media-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.media-row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  background: var(--admin-bg);
-  padding: 8px;
-  border-radius: 12px;
-  border: 1px solid var(--admin-border);
-}
-
-.media-input-wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+/* Cover Uploader */
+.canvas-cover-preview {
+  width: 100%;
+  aspect-ratio: 1.5;
+  border-radius: 16px;
+  background-size: cover;
+  background-position: center;
   position: relative;
+  overflow: hidden;
+  border: 1px solid var(--admin-border);
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.upload-progress-bar {
+.canvas-cover-preview:hover {
+  transform: scale(1.02);
+  border-color: var(--admin-primary);
+}
+
+.cover-overlay-minimal {
   position: absolute;
-  bottom: -2px;
-  left: 0;
-  right: 0;
-  padding: 0 4px;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: 0.3s;
+  backdrop-filter: blur(4px);
 }
 
-.delete-media-btn:hover {
-  background: rgba(239,68,68,0.1) !important;
+.canvas-cover-preview:hover .cover-overlay-minimal {
+  opacity: 1;
 }
 
-.empty-media {
+.overlay-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+}
+
+.overlay-action-btn span {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.canvas-cover-placeholder {
+  width: 100%;
+  aspect-ratio: 1.5;
+  border-radius: 16px;
+  border: 1px dashed var(--admin-border);
+  background: var(--admin-surface-light);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px;
-  color: var(--admin-text-muted);
   gap: 12px;
-  border: 2px dashed var(--admin-border);
-  border-radius: 16px;
+  color: var(--admin-text-muted);
+  transition: 0.3s;
 }
 
-.add-media-btn {
-  align-self: flex-start;
-  font-weight: 600;
+.canvas-cover-placeholder:hover {
+  background: var(--admin-surface);
+  border-color: var(--admin-primary);
 }
 
-/* --- Right Panel Elements --- */
-.media-upload-area { margin-bottom: 24px; }
-.media-upload-area label { display: block; font-size: 12px; color: var(--admin-text-muted); margin-bottom: 12px; font-weight: 700; }
-
-.cover-uploader {
-  width: 100%;
+.placeholder-icon-box {
+  color: var(--admin-border);
 }
 
-.cover-uploader :deep(.el-upload) {
-  width: 100%;
-  display: block;
+.p-text {
+  font-family: var(--font-data);
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--admin-primary);
 }
 
-.cover-input-box {
+.p-tip {
+  font-family: var(--font-data);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+.loading-ring {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--admin-primary-glow);
+  border-top-color: var(--admin-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Economics V2 */
+.price-strip-v2 {
+  background: var(--admin-surface-light);
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--admin-border);
+}
+
+.strip-label-row {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  justify-content: space-between;
+  margin-bottom: 12px;
 }
 
-.cover-input-group {
+.strip-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--admin-text-secondary);
+}
+
+.currency-code {
+  font-family: var(--font-data);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--admin-text-muted);
+  opacity: 0.6;
+}
+
+.input-row-v2 {
   display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.reset-number-v2 {
+  flex: 1;
+}
+
+.reset-number-v2 :deep(.el-input__wrapper) {
+  background: var(--admin-surface) !important;
+  box-shadow: 0 0 0 1px var(--admin-border) inset !important;
+}
+
+.unit-box {
+  width: 32px;
+  height: 32px;
+  background: var(--admin-primary);
+  color: #fff;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* Tags V2 */
+.seamless-tag-cloud-v2 {
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
-.cover-preview {
-  position: relative;
-  border-radius: 20px;
-  overflow: hidden;
-  aspect-ratio: 16/9;
-  border: 1px solid var(--admin-border);
-  box-shadow: var(--admin-shadow-sm);
-  background: var(--admin-bg);
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.cover-preview:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--admin-shadow-lg);
-  border-color: var(--admin-primary);
-}
-
-.cover-preview img { width: 100%; height: 100%; object-fit: cover; }
-.cover-mask {
-  position: absolute; inset: 0; 
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 12px; opacity: 0; transition: all 0.3s; color: #fff;
-}
-.cover-preview:hover .cover-mask { opacity: 1; }
-
-.cover-placeholder {
-  aspect-ratio: 16/9;
-  border: 2px dashed var(--admin-border);
-  background: var(--admin-surface-light);
-  border-radius: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  color: var(--admin-text-muted);
-  cursor: pointer;
-  transition: all 0.4s ease;
-}
-
-.cover-placeholder:hover {
-  border-color: var(--admin-primary);
-  color: var(--admin-primary);
-  background: var(--admin-primary-glow);
-  transform: scale(1.02);
-}
-
-.cover-placeholder .lucide-image {
-  transform: scale(1.2);
-  transition: transform 0.4s;
-}
-
-.cover-placeholder:hover .lucide-image {
-  transform: scale(1.4) rotate(5deg);
-}
-
-.cover-placeholder span {
-  font-size: 14px;
+.flat-tag-v2 {
+  border-radius: 6px;
+  border: 1px solid var(--admin-border) !important;
+  background: var(--admin-surface-light) !important;
+  color: var(--admin-text-secondary) !important;
   font-weight: 600;
-  letter-spacing: 0.5px;
+  font-size: 11px;
 }
 
-.form-item-group { margin-bottom: 24px; }
-.form-item-group label { display: block; font-size: 12px; color: var(--admin-text-muted); margin-bottom: 12px; font-weight: 700; }
+.tag-input-trigger-v2 {
+  display: flex;
+}
 
-.tag-manager { margin-bottom: 24px; }
-.tag-manager label { display: block; font-size: 12px; color: var(--admin-text-muted); margin-bottom: 12px; font-weight: 700; }
-.tag-inputs { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn-tag-plus-v2 {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--admin-primary);
+  text-transform: uppercase;
+}
 
-.status-config label { display: block; font-size: 12px; color: var(--admin-text-muted); margin-bottom: 12px; font-weight: 700; }
-.status-toggle {
+/* Status Card V2 */
+.status-indicator-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 16px;
+  border-radius: 14px;
   background: var(--admin-surface-light);
-  padding: 12px 20px;
-  border-radius: 12px;
   border: 1px solid var(--admin-border);
+  transition: all 0.4s;
 }
 
-.status-toggle span { font-size: 13px; color: var(--admin-text-muted); transition: 0.3s; }
-.status-toggle span.active { color: var(--admin-text-main); font-weight: 700; }
+.status-indicator-card.is-online {
+  border-color: var(--admin-success);
+  background: rgba(16, 185, 129, 0.02);
+}
 
-@keyframes slide-up {
+.status-info-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-dot-v2 {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--admin-text-muted);
+  box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.1);
+}
+
+.is-online .status-dot-v2 {
+  background: var(--admin-success);
+  box-shadow: 0 0 10px var(--admin-success), 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.status-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--admin-text-secondary);
+}
+
+/* Links V2 */
+.link-field-v2 {
+  background: var(--admin-surface-light);
+  padding: 4px 12px;
+  border-radius: 10px;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.input-minimal-link :deep(.el-input__wrapper) {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0;
+}
+
+/* Animations */
+@keyframes canvas-fade {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-:deep(.el-input-number.full-width) {
-  width: 100%;
+.stagger-list-enter-active { transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+.stagger-list-enter-from { opacity: 0; transform: translateX(-20px); }
+
+.tag-pop-enter-active { transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.tag-pop-enter-from { opacity: 0; transform: scale(0.5); }
+
+@media (max-width: 1200px) {
+  .seamless-canvas { grid-template-columns: 1fr; gap: 60px; }
+  .canvas-support-stream { order: -1; }
+  .section-indicator { display: none; }
+  .project-detail-wrapper { padding: 0 24px 60px; }
 }
 </style>
