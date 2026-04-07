@@ -38,6 +38,16 @@
                   class="headline-input-v3"
                 />
               </el-form-item>
+              
+              <el-form-item prop="description" class="no-label-item description-item">
+                <el-input
+                  v-model="form.description"
+                  type="textarea"
+                  :rows="2"
+                  placeholder="请输入资产简要描述（显示在列表页卡片中）..."
+                  class="description-input-v3"
+                />
+              </el-form-item>
             </div>
             
             <div class="meta-row-seamless">
@@ -382,6 +392,7 @@ const uploadHeaders = {
 const form = reactive({
   id: route.params.id === 'new' ? undefined : Number(route.params.id),
   title: '',
+  description: '',
   type: '',
   categoryId: null,
   techStack: '',
@@ -738,6 +749,30 @@ onMounted(() => {
 
 .headline-input-v3 :deep(.el-textarea__inner::placeholder) {
   color: var(--admin-border);
+}
+
+.description-input-v3 :deep(.el-textarea__inner) {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: var(--admin-text-secondary);
+  padding: 0 0 12px 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 0;
+  resize: none;
+  border-bottom: 1px solid var(--admin-border) !important;
+  transition: all 0.3s;
+}
+
+.description-input-v3 :deep(.el-textarea__inner:focus) {
+  border-color: var(--admin-primary) !important;
+}
+
+.description-input-v3 :deep(.el-textarea__inner::placeholder) {
+  color: var(--admin-border);
+  font-weight: 400;
 }
 
 .meta-row-seamless {
