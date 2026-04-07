@@ -39,6 +39,7 @@ public class Project implements Serializable {
     private Integer status;
     private Integer isRecommend;
     private Integer isNew;
+    private String tags;
     private String major;
     private Integer sortOrder;
     @TableField(exist = false)

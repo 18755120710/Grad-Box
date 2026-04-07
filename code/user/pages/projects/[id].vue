@@ -57,6 +57,16 @@
             </div>
           </div>
 
+          </div>
+          
+          <!-- Classification Tags -->
+          <div v-if="project.tags" class="flex flex-wrap gap-2 animate-fade-in" style="animation-delay: 150ms">
+            <span v-for="tag in project.tags.split(',')" :key="tag" 
+                  class="px-3 py-1 bg-primary/10 border border-primary/20 text-primary rounded-lg text-[10px] font-bold uppercase tracking-wider">
+              # {{ tag }}
+            </span>
+          </div>
+          
           <!-- Quick Stats Overlay -->
           <div class="flex gap-10 pt-6 text-white/40 font-bold uppercase tracking-profound text-[9px] pointer-events-auto">
             <div class="flex items-center gap-2"><Eye :size="14" class="text-primary" /> {{ project.viewCount }} Views</div>

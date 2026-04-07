@@ -430,7 +430,12 @@ const loadProject = async () => {
     Object.assign(form, res.data)
     // 确保 medias 是数组
     if (!form.medias) form.medias = []
-    if (!form.tags) form.tags = []
+    // 转换标签
+    if (typeof res.data.tags === 'string' && res.data.tags) {
+      form.tags = res.data.tags.split(',')
+    } else {
+      form.tags = []
+    }
   } catch (_e) {
     ElMessage.error('无法调取资产快照')
   } finally {
@@ -448,10 +453,16 @@ const handleSave = async () => {
   
   submitting.value = true
   try {
+    // 准备提交数据，将 tags 数组转为逗号分隔字符串
+    const payload = {
+      ...form,
+      tags: form.tags.join(',')
+    }
+    
     if (isEdit.value) {
-      await request.put(`/api/projects/${form.id}`, form)
+      await request.put(`/api/projects/${form.id}`, payload)
     } else {
-      await request.post('/api/projects', form)
+      await request.post('/api/projects', payload)
     }
     ElMessage.success('资产数据已成功同步至云端')
     router.push('/projects')
