@@ -26,16 +26,16 @@
         
         <!-- Section: Primary Identity -->
         <section class="canvas-section hero-section">
-          <div class="section-indicator">01 . IDENTITY</div>
+          <div class="section-indicator">01 . 核心身份</div>
           <el-form :model="form" :rules="rules" ref="formRef" label-position="top" class="borderless-form">
             <div class="title-headline">
               <el-form-item prop="title" class="no-label-item">
                 <el-input 
                   v-model="form.title" 
-                  placeholder="项目名称 / 关键命题..." 
-                  class="headline-input"
-                  resize="none"
-                  autosize
+                  type="textarea"
+                  :autosize="{ minRows: 1, maxRows: 3 }"
+                  placeholder="请输入资产标题..." 
+                  class="headline-input-v3"
                 />
               </el-form-item>
             </div>
@@ -67,14 +67,14 @@
 
         <!-- Section: Rich Content -->
         <section class="canvas-section editor-section">
-          <div class="section-indicator">02 . DOCUMENTATION</div>
+          <div class="section-indicator">02 . 资产档案</div>
           <div class="section-header-seamless">
             <div class="header-main-info">
               <h3 class="section-heading-text">深度解析</h3>
               <p class="section-muted-text">在此沉淀项目的详尽描述与技术亮点</p>
             </div>
             <div class="header-extra">
-              <span class="word-count-chip">MARCH 2024 REV</span>
+              <span class="word-count-chip">2026.04 修订版</span>
             </div>
           </div>
           <div class="seamless-editor-wrapper">
@@ -94,7 +94,7 @@
 
         <!-- Section: Gallery -->
         <section class="canvas-section gallery-section-seamless">
-          <div class="section-indicator">03 . ASSETS</div>
+          <div class="section-indicator">03 . 媒体资产</div>
           <div class="section-header-seamless flex-between">
             <div class="title-group">
               <h3 class="section-heading-text">媒体资产流</h3>
@@ -117,12 +117,12 @@
                 
                 <div class="asset-config-row">
                   <el-select v-model="media.mediaType" class="type-mini-selector">
-                    <el-option label="IMG" :value="1" />
-                    <el-option label="VOD" :value="2" />
+                    <el-option label="图片" :value="1" />
+                    <el-option label="视频" :value="2" />
                   </el-select>
                   
                   <div class="asset-url-field">
-                    <el-input v-model="media.mediaUrl" placeholder="输入直链或点击上传..." class="input-minimal">
+                    <el-input v-model="media.mediaUrl" placeholder="输入链接或点击右侧上传..." class="input-minimal">
                       <template #append>
                         <el-upload
                           :action="uploadUrl"
@@ -147,17 +147,14 @@
 
                 <div class="asset-preview-box" :class="{ 'has-url': !!media.mediaUrl }" @click="handlePreview(media)">
                   <template v-if="media.mediaUrl">
-                    <el-image 
+                    <img
                       v-if="media.mediaType === 1" 
                       :src="media.mediaUrl" 
-                      fit="cover" 
-                      class="thumb-img" 
-                      :preview-src-list="[media.mediaUrl]"
-                      @click.stop
+                      class="thumb-img-static" 
                     />
                     <div v-else class="video-preview-placeholder">
                       <lucide-monitor-play :size="14" />
-                      <span class="preview-label">PREVIEW</span>
+                      <span class="preview-label">预览</span>
                     </div>
                   </template>
                   <div v-else class="empty-preview">
@@ -177,7 +174,7 @@
               </div>
               <div class="empty-text">
                 <span class="primary-msg">尚未收录展示素材</span>
-                <span class="secondary-msg">点击上方按钮追加图片或视频资产</span>
+                <span class="secondary-msg">点击上方追加资产资产</span>
               </div>
             </div>
           </div>
@@ -189,7 +186,7 @@
         <div class="sticky-support-panel">
           
           <div class="support-block cover-block">
-            <h4 class="support-title">Master View</h4>
+            <h4 class="support-title">资产封面视图</h4>
             <div class="seamless-cover-uploader">
               <el-upload
                 class="uploader-canvas"
@@ -201,32 +198,39 @@
                 :on-progress="handleCoverProgress"
                 :on-error="handleCoverError"
               >
-                <div class="canvas-cover-preview" v-if="form.coverImage" :style="{ backgroundImage: `url(${form.coverImage})` }" @click.stop="handlePreview({ mediaType: 1, mediaUrl: form.coverImage })">
+                <div class="canvas-cover-preview" v-if="form.coverImage">
+                  <img :src="form.coverImage" class="full-cover-image" />
                   <div class="cover-overlay-minimal">
+                    <div class="overlay-action-btn" @click.stop="handlePreview({ mediaType: 1, mediaUrl: form.coverImage })">
+                      <lucide-eye :size="16" />
+                      <span>查看预览</span>
+                    </div>
                     <div class="overlay-action-btn">
-                      <lucide-edit-2 :size="16" />
+                      <lucide-edit-2 :size="14" />
                       <span>更换封面</span>
                     </div>
                   </div>
                 </div>
                 <div class="canvas-cover-placeholder" v-else :class="{ 'loading': coverProgress > 0 && coverProgress < 100 }">
-                  <template v-if="coverProgress > 0 && coverProgress < 100">
-                    <div class="loading-ring"></div>
-                    <span class="p-text">{{ coverProgress }}%</span>
-                  </template>
-                  <template v-else>
-                    <div class="placeholder-icon-box">
-                      <lucide-plus :size="24" />
-                    </div>
-                    <span class="p-tip">INIT COVER</span>
-                  </template>
+                  <div class="placeholder-content">
+                    <template v-if="coverProgress > 0 && coverProgress < 100">
+                      <div class="loading-ring"></div>
+                      <span class="p-text">{{ coverProgress }}%</span>
+                    </template>
+                    <template v-else>
+                      <div class="placeholder-icon-box">
+                        <lucide-plus :size="24" />
+                      </div>
+                      <span class="p-tip">主视图初始化</span>
+                    </template>
+                  </div>
                 </div>
               </el-upload>
             </div>
           </div>
 
           <div class="support-block config-block">
-            <h4 class="support-title">Economics</h4>
+            <h4 class="support-title">资产定价</h4>
             <div class="price-strip-v3">
               <div class="price-header">
                 <span class="price-label">资产净值定价</span>
@@ -247,7 +251,7 @@
           </div>
 
           <div class="support-block tags-block">
-            <h4 class="support-title">Classification</h4>
+            <h4 class="support-title">资产分类标签</h4>
             <div class="seamless-tag-cloud-v2">
               <TransitionGroup name="tag-pop">
                 <el-tag 
@@ -294,9 +298,9 @@
           </div>
 
           <div class="support-block links-block">
-            <h4 class="support-title">External Links</h4>
+            <h4 class="support-title">外部入口</h4>
             <div class="link-field-v2">
-              <el-input v-model="form.demoUrl" placeholder="Live Demo URL..." class="input-minimal-link">
+              <el-input v-model="form.demoUrl" placeholder="输入演示地址..." class="input-minimal-link">
                 <template #prefix><lucide-link :size="12" /></template>
               </el-input>
             </div>
@@ -305,11 +309,13 @@
       </aside>
     </div>
 
-    <!-- Video Preview Dialog -->
-    <el-dialog v-model="videoVisible" width="60%" class="video-preview-window" destroy-on-close :show-close="false">
-      <div class="video-container">
-        <video :src="previewVideoUrl" controls autoplay class="full-video"></video>
-        <el-button circle class="close-video-btn" @click="videoVisible = false">
+    <!-- Unified Media Preview Dialog -->
+    <el-dialog v-model="previewVisible" width="60%" class="media-preview-window" destroy-on-close :show-close="false">
+      <div class="preview-container">
+        <img v-if="previewMediaType === 1" :src="previewUrl" class="full-media-preview" />
+        <video v-else-if="previewMediaType === 2" :src="previewUrl" controls autoplay class="full-video"></video>
+        
+        <el-button circle class="close-preview-btn" @click="previewVisible = false">
           <lucide-x :size="20" />
         </el-button>
       </div>
@@ -355,16 +361,16 @@ const submitting = ref(false)
 const categories = ref<any[]>([])
 const formRef = ref()
 
-// --- Media Preview State ---
-const videoVisible = ref(false)
-const previewVideoUrl = ref('')
+// --- Unified Media Preview State ---
+const previewVisible = ref(false)
+const previewUrl = ref('')
+const previewMediaType = ref(1) // 1: Image, 2: Video
 
 const handlePreview = (media: any) => {
   if (!media.mediaUrl) return
-  if (media.mediaType === 2) {
-    previewVideoUrl.value = media.mediaUrl
-    videoVisible.value = true
-  }
+  previewUrl.value = media.mediaUrl
+  previewMediaType.value = media.mediaType
+  previewVisible.value = true
 }
 
 const uploadUrl = 'http://localhost:8080/api/file/upload'
@@ -700,16 +706,26 @@ onMounted(() => {
   padding: 0;
 }
 
-.headline-input :deep(.el-input__inner) {
+.headline-input-v3 {
+  width: 100%;
+}
+
+.headline-input-v3 :deep(.el-textarea__inner) {
   font-size: 44px;
   font-weight: 800;
   letter-spacing: -1.5px;
-  line-height: 1.4; /* Increased line-height to prevent clipping */
+  line-height: 1.3;
   color: var(--admin-text-main);
-  padding: 8px 0; /* Add vertical padding */
+  padding: 12px 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 0;
+  resize: none;
+  min-height: auto !important;
 }
 
-.headline-input :deep(.el-input__inner::placeholder) {
+.headline-input-v3 :deep(.el-textarea__inner::placeholder) {
   color: var(--admin-border);
 }
 
@@ -1055,6 +1071,11 @@ onMounted(() => {
   gap: 16px;
 }
 
+.seamless-cover-uploader :deep(.el-upload) {
+  display: block;
+  width: 100%;
+}
+
 .support-title {
   font-family: var(--font-data);
   font-size: 10px;
@@ -1080,12 +1101,18 @@ onMounted(() => {
   width: 100%;
   aspect-ratio: 1.5;
   border-radius: 16px;
-  background-size: cover;
-  background-position: center;
   position: relative;
   overflow: hidden;
   border: 1px solid var(--admin-border);
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--admin-surface-light);
+}
+
+.full-cover-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .canvas-cover-preview:hover {
@@ -1130,13 +1157,20 @@ onMounted(() => {
   border-radius: 16px;
   border: 1px dashed var(--admin-border);
   background: var(--admin-surface-light);
+  display: flex; /* Centering fix */
+  align-items: center;
+  justify-content: center;
+  color: var(--admin-text-muted);
+  transition: 0.3s;
+  overflow: hidden;
+}
+
+.placeholder-content {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  color: var(--admin-text-muted);
-  transition: 0.3s;
 }
 
 .canvas-cover-placeholder:hover {
@@ -1160,6 +1194,12 @@ onMounted(() => {
   font-weight: 700;
   font-size: 10px;
   letter-spacing: 1px;
+}
+
+.thumb-img-static {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .loading-ring {
@@ -1247,19 +1287,19 @@ onMounted(() => {
   text-align: right;
 }
 
-/* Video Preview Dialog */
-.video-preview-window :deep(.el-dialog__header) {
+/* Unified Media Preview Dialog */
+.media-preview-window :deep(.el-dialog__header) {
   display: none;
 }
 
-.video-preview-window :deep(.el-dialog__body) {
+.media-preview-window :deep(.el-dialog__body) {
   padding: 0;
   background: #000;
   border-radius: 12px;
   overflow: hidden;
 }
 
-.video-container {
+.preview-container {
   position: relative;
   width: 100%;
   aspect-ratio: 16/9;
@@ -1269,13 +1309,19 @@ onMounted(() => {
   justify-content: center;
 }
 
+.full-media-preview {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
 .full-video {
   width: 100%;
   height: 100%;
   object-fit: contain;
 }
 
-.close-video-btn {
+.close-preview-btn {
   position: absolute;
   top: 20px;
   right: 20px;
@@ -1287,7 +1333,7 @@ onMounted(() => {
   transition: all 0.3s;
 }
 
-.close-video-btn:hover {
+.close-preview-btn:hover {
   background: rgba(255, 255, 255, 0.2) !important;
   transform: scale(1.1);
 }
