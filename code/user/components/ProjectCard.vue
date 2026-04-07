@@ -29,12 +29,12 @@ const catStyles = computed(() => getCategoryStyles(props.project.major || props.
 </script>
 
 <template>
-  <div :class="['group relative glass-premium rounded-[48px] overflow-hidden transition-all duration-1000 hover:-translate-y-4 flex flex-col h-full hover:shadow-[0_40px_80px_-15px_rgba(0,0,0,0.1)]', catStyles.glow]">
+  <NuxtLink :to="`/projects/${project.id}`" :class="['group relative glass-premium rounded-[48px] overflow-hidden transition-all duration-300 flex flex-col h-full hover:shadow-xl hover:border-primary/20', catStyles.glow]">
     <!-- Image Section -->
-    <div class="relative aspect-[16/10] overflow-hidden m-4 rounded-[32px] group-hover:scale-[0.97] transition-transform duration-700">
+    <div class="relative aspect-[16/10] overflow-hidden m-4 rounded-[32px]">
       <img :src="project.coverImage || 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop'" 
            :alt="project.title"
-           class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+           class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
       <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-60"></div>
       
       <!-- Tech Badges Group -->
@@ -43,14 +43,6 @@ const catStyles = computed(() => getCategoryStyles(props.project.major || props.
               class="px-4 py-1.5 bg-white/20 backdrop-blur-lg text-white border border-white/30 text-[9px] uppercase tracking-profound font-bold rounded-lg whitespace-nowrap">
           {{ tag }}
         </span>
-      </div>
-
-      <!-- Quick Action Overlay -->
-      <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 bg-profound-black/20 backdrop-blur-[2px]">
-        <NuxtLink :to="`/projects/${project.id}`" 
-                  class="px-10 py-4 bg-white text-profound-black rounded-xl text-xs font-bold shadow-2xl hover:bg-profound-black hover:text-white transition-all transform hover:scale-105 uppercase tracking-widest">
-          查看详情
-        </NuxtLink>
       </div>
     </div>
 
@@ -95,5 +87,5 @@ const catStyles = computed(() => getCategoryStyles(props.project.major || props.
         </div>
       </div>
     </div>
-  </div>
+  </NuxtLink>
 </template>
