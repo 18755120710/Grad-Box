@@ -60,7 +60,7 @@
           <!-- Classification Tags -->
           <div v-if="project.tags" class="flex flex-wrap gap-2 animate-fade-in" style="animation-delay: 150ms">
             <span v-for="tag in project.tags.split(',')" :key="tag" 
-                  class="px-3 py-1 bg-primary/10 border border-primary/20 text-primary rounded-lg text-[10px] font-bold uppercase tracking-wider">
+                  class="px-4 py-1.5 bg-primary/20 border border-primary/30 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider backdrop-blur-md hover:bg-primary/40 transition-colors cursor-default">
               # {{ tag }}
             </span>
           </div>

@@ -49,10 +49,17 @@ const catStyles = computed(() => getCategoryStyles(props.project.major || props.
     <!-- Content Section -->
     <div class="p-8 pt-2 flex flex-col flex-grow space-y-5">
       <div class="space-y-2">
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <span :class="['text-[9px] font-heading font-bold uppercase tracking-profound px-2.5 py-1 rounded-md border', catStyles.text, catStyles.bg, catStyles.border]">
             {{ project.major || project.categoryName || '毕业设计' }}
           </span>
+          <!-- Classification Tags -->
+          <div v-if="project.tags" class="flex gap-1">
+            <span v-for="tag in project.tags.split(',').slice(0, 2)" :key="tag"
+                  class="text-[8px] font-bold text-primary/60 px-1.5 py-0.5 bg-primary/5 rounded border border-primary/10">
+              #{{ tag }}
+            </span>
+          </div>
         </div>
         <h3 class="text-xl font-heading font-bold text-slate-900 line-clamp-2 group-hover:text-primary transition-colors leading-snug tracking-tight uppercase">
           {{ project.title }}
