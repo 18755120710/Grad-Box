@@ -145,7 +145,7 @@
                   </div>
                 </div>
 
-                <div class="asset-preview-box" :class="{ 'has-url': !!media.mediaUrl }">
+                <div class="asset-preview-box" :class="{ 'has-url': !!media.mediaUrl }" @click="handlePreview(media)">
                   <template v-if="media.mediaUrl">
                     <el-image 
                       v-if="media.mediaType === 1" 
@@ -153,10 +153,11 @@
                       fit="cover" 
                       class="thumb-img" 
                       :preview-src-list="[media.mediaUrl]"
+                      @click.stop
                     />
                     <div v-else class="video-preview-placeholder">
                       <lucide-monitor-play :size="14" />
-                      <span class="preview-label">VIDEO</span>
+                      <span class="preview-label">PREVIEW</span>
                     </div>
                   </template>
                   <div v-else class="empty-preview">
@@ -200,7 +201,7 @@
                 :on-progress="handleCoverProgress"
                 :on-error="handleCoverError"
               >
-                <div class="canvas-cover-preview" v-if="form.coverImage" :style="{ backgroundImage: `url(${form.coverImage})` }">
+                <div class="canvas-cover-preview" v-if="form.coverImage" :style="{ backgroundImage: `url(${form.coverImage})` }" @click.stop="handlePreview({ mediaType: 1, mediaUrl: form.coverImage })">
                   <div class="cover-overlay-minimal">
                     <div class="overlay-action-btn">
                       <lucide-edit-2 :size="16" />
@@ -226,14 +227,21 @@
 
           <div class="support-block config-block">
             <h4 class="support-title">Economics</h4>
-            <div class="price-strip-v2">
-              <div class="strip-label-row">
-                <span class="strip-label">项目标价</span>
-                <span class="currency-code">CNY / RENMINBI</span>
+            <div class="price-strip-v3">
+              <div class="price-header">
+                <span class="price-label">资产净值定价</span>
+                <span class="currency-label">CNY</span>
               </div>
-              <div class="input-row-v2">
-                <el-input-number v-model="form.price" :precision="2" :step="10" controls-position="right" class="reset-number-v2" />
-                <div class="unit-box">¥</div>
+              <div class="price-input-wrapper">
+                <div class="currency-symbol">¥</div>
+                <el-input-number 
+                  v-model="form.price" 
+                  :precision="2" 
+                  :step="100" 
+                  :min="0"
+                  controls-position="right" 
+                  class="premium-price-input" 
+                />
               </div>
             </div>
           </div>
@@ -297,6 +305,16 @@
       </aside>
     </div>
 
+    <!-- Video Preview Dialog -->
+    <el-dialog v-model="videoVisible" width="60%" class="video-preview-window" destroy-on-close :show-close="false">
+      <div class="video-container">
+        <video :src="previewVideoUrl" controls autoplay class="full-video"></video>
+        <el-button circle class="close-video-btn" @click="videoVisible = false">
+          <lucide-x :size="20" />
+        </el-button>
+      </div>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -322,7 +340,8 @@ import {
   LucideMonitorPlay,
   LucideEdit2,
   LucideArrowLeft,
-  LucideLayers
+  LucideLayers,
+  LucideEye
 } from 'lucide-vue-next'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
@@ -335,6 +354,18 @@ const loading = ref(false)
 const submitting = ref(false)
 const categories = ref<any[]>([])
 const formRef = ref()
+
+// --- Media Preview State ---
+const videoVisible = ref(false)
+const previewVideoUrl = ref('')
+
+const handlePreview = (media: any) => {
+  if (!media.mediaUrl) return
+  if (media.mediaType === 2) {
+    previewVideoUrl.value = media.mediaUrl
+    videoVisible.value = true
+  }
+}
 
 const uploadUrl = 'http://localhost:8080/api/file/upload'
 const uploadHeaders = {
@@ -483,17 +514,32 @@ const handleMediaBeforeUpload = (index: number) => {
 }
 
 const handleMediaProgress = (evt: any, index: number) => {
-  mediaProgress.value[index] = Math.round(evt.percent)
+  // Ensure the progress is reactive and triggers UI update
+  mediaProgress.value = {
+    ...mediaProgress.value,
+    [index]: Math.round(evt.percent)
+  }
 }
 
 const handleMediaUploadSuccess = (res: any, index: number) => {
   form.medias[index].mediaUrl = res.data
-  mediaProgress.value[index] = 100
+  mediaProgress.value = {
+    ...mediaProgress.value,
+    [index]: 100
+  }
   ElMessage.success('素材上传成功')
+  // Clear progress after short delay
+  setTimeout(() => {
+    const nextProgress = { ...mediaProgress.value }
+    delete nextProgress[index]
+    mediaProgress.value = nextProgress
+  }, 1000)
 }
 
 const handleMediaError = (index: number) => {
-  mediaProgress.value[index] = 0
+  const nextProgress = { ...mediaProgress.value }
+  delete nextProgress[index]
+  mediaProgress.value = nextProgress
   ElMessage.error('素材上传失败')
 }
 
@@ -658,9 +704,9 @@ onMounted(() => {
   font-size: 44px;
   font-weight: 800;
   letter-spacing: -1.5px;
-  line-height: 1.1;
+  line-height: 1.4; /* Increased line-height to prevent clipping */
   color: var(--admin-text-main);
-  padding: 0;
+  padding: 8px 0; /* Add vertical padding */
 }
 
 .headline-input :deep(.el-input__inner::placeholder) {
@@ -678,6 +724,10 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.meta-item:first-child {
+  min-width: 140px; /* Ensure category has enough width */
 }
 
 .meta-item label {
@@ -871,14 +921,16 @@ onMounted(() => {
   bottom: -1px;
   left: 0;
   right: 0;
-  height: 1px;
+  height: 2px; /* Slightly thicker for visibility */
   background: var(--admin-border);
+  z-index: 10;
 }
 
 .progress-bar-nano .fill {
   height: 100%;
   background: var(--admin-primary);
-  transition: width 0.3s;
+  box-shadow: 0 0 8px var(--admin-primary-glow);
+  transition: width 0.3s ease-out;
 }
 
 .asset-preview-box {
@@ -888,6 +940,7 @@ onMounted(() => {
   overflow: hidden;
   background: var(--admin-bg);
   border: 1px solid var(--admin-border);
+  cursor: pointer; /* Change cursor for preview */
 }
 
 .asset-preview-box.has-url {
@@ -1122,60 +1175,121 @@ onMounted(() => {
   to { transform: rotate(360deg); }
 }
 
-/* Economics V2 */
-.price-strip-v2 {
-  background: var(--admin-surface-light);
-  padding: 16px;
-  border-radius: 14px;
+/* Economics V3 */
+.price-strip-v3 {
+  background: var(--admin-bg);
+  padding: 20px;
+  border-radius: 18px;
   border: 1px solid var(--admin-border);
+  transition: all 0.3s;
 }
 
-.strip-label-row {
+.price-strip-v3:hover {
+  border-color: var(--admin-primary-glow);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.04);
+}
+
+.price-header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 12px;
+  align-items: center;
+  margin-bottom: 16px;
 }
 
-.strip-label {
+.price-label {
   font-size: 12px;
   font-weight: 700;
   color: var(--admin-text-secondary);
 }
 
-.currency-code {
+.currency-label {
   font-family: var(--font-data);
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--admin-text-muted);
-  opacity: 0.6;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--admin-primary);
+  opacity: 0.8;
+  background: var(--admin-primary-glow);
+  padding: 2px 8px;
+  border-radius: 4px;
 }
 
-.input-row-v2 {
+.price-input-wrapper {
   display: flex;
   align-items: center;
   gap: 12px;
+  background: var(--admin-surface);
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--admin-border);
 }
 
-.reset-number-v2 {
+.currency-symbol {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--admin-primary);
+}
+
+.premium-price-input {
   flex: 1;
 }
 
-.reset-number-v2 :deep(.el-input__wrapper) {
-  background: var(--admin-surface) !important;
-  box-shadow: 0 0 0 1px var(--admin-border) inset !important;
+.premium-price-input :deep(.el-input__wrapper) {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding-left: 0;
 }
 
-.unit-box {
-  width: 32px;
-  height: 32px;
-  background: var(--admin-primary);
-  color: #fff;
-  border-radius: 8px;
+.premium-price-input :deep(.el-input__inner) {
+  font-family: var(--font-data);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--admin-text-main);
+  text-align: right;
+}
+
+/* Video Preview Dialog */
+.video-preview-window :deep(.el-dialog__header) {
+  display: none;
+}
+
+.video-preview-window :deep(.el-dialog__body) {
+  padding: 0;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.video-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 14px;
+}
+
+.full-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.close-video-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: none !important;
+  color: #fff !important;
+  backdrop-filter: blur(10px);
+  z-index: 100;
+  transition: all 0.3s;
+}
+
+.close-video-btn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  transform: scale(1.1);
 }
 
 /* Tags V2 */
