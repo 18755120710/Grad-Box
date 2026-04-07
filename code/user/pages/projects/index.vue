@@ -28,29 +28,78 @@
           </div>
           
           <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+            <!-- Transparent overlay for dropdowns -->
+            <div v-if="techDropdownOpen || majorDropdownOpen" @click="techDropdownOpen = false; majorDropdownOpen = false" class="fixed inset-0 z-40"></div>
+
             <!-- Tech Filter -->
-            <div class="relative w-full sm:w-auto flex-1 sm:flex-none">
-              <select v-model="techFilter" @change="triggerSearch"
-                      class="w-full pl-9 pr-8 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm text-slate-600">
-                <option value="">全部技术方向</option>
-                <option v-for="t in techOptions" :key="t" :value="t">{{ t }}</option>
-              </select>
+            <div class="relative w-full sm:w-auto flex-1 sm:flex-none z-50">
+              <div @click="techDropdownOpen = !techDropdownOpen; majorDropdownOpen = false" 
+                   class="w-full sm:w-44 pl-9 pr-8 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium cursor-pointer shadow-sm text-slate-600 transition-all hover:border-primary/40 flex items-center">
+                <span class="truncate">{{ techFilter || '全部技术方向' }}</span>
+              </div>
               <Cpu :size="14" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-              <ChevronDown :size="14" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <ChevronDown :size="14" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none transition-transform duration-200" :class="{ 'rotate-180': techDropdownOpen }" />
+              
+              <!-- Dropdown Menu -->
+              <transition
+                enter-active-class="transition duration-150 ease-out"
+                enter-from-class="transform scale-95 opacity-0"
+                enter-to-class="transform scale-100 opacity-100"
+                leave-active-class="transition duration-100 ease-in"
+                leave-from-class="transform scale-100 opacity-100"
+                leave-to-class="transform scale-95 opacity-0"
+              >
+                <div v-show="techDropdownOpen" class="absolute left-0 right-0 sm:min-w-[12rem] mt-2 py-1.5 bg-white border border-slate-100 rounded-xl shadow-2xl max-h-64 overflow-y-auto z-50 origin-top dropdown-scroll">
+                  <div @click="techFilter = ''; techDropdownOpen = false; triggerSearch()" 
+                       class="px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 cursor-pointer transition-colors flex items-center justify-between"
+                       :class="{ 'text-primary font-bold bg-primary/5': techFilter === '' }">
+                    全部技术方向
+                  </div>
+                  <div v-for="t in techOptions" :key="t" 
+                       @click="techFilter = t; techDropdownOpen = false; triggerSearch()" 
+                       class="px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 cursor-pointer transition-colors flex items-center justify-between"
+                       :class="{ 'text-primary font-bold bg-primary/5': techFilter === t }">
+                    {{ t }}
+                  </div>
+                </div>
+              </transition>
             </div>
 
             <!-- Major Filter -->
-            <div class="relative w-full sm:w-auto flex-1 sm:flex-none">
-              <select v-model="majorFilter" @change="triggerSearch"
-                      class="w-full pl-9 pr-8 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm text-slate-600">
-                <option value="">全部专业门类</option>
-                <option v-for="m in majorOptions" :key="m" :value="m">{{ m }}</option>
-              </select>
+            <div class="relative w-full sm:w-auto flex-1 sm:flex-none z-50">
+              <div @click="majorDropdownOpen = !majorDropdownOpen; techDropdownOpen = false" 
+                   class="w-full sm:w-44 pl-9 pr-8 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium cursor-pointer shadow-sm text-slate-600 transition-all hover:border-primary/40 flex items-center">
+                <span class="truncate">{{ majorFilter || '全部专业门类' }}</span>
+              </div>
               <GraduationCap :size="14" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-              <ChevronDown :size="14" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <ChevronDown :size="14" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none transition-transform duration-200" :class="{ 'rotate-180': majorDropdownOpen }" />
+              
+              <!-- Dropdown Menu -->
+              <transition
+                enter-active-class="transition duration-150 ease-out"
+                enter-from-class="transform scale-95 opacity-0"
+                enter-to-class="transform scale-100 opacity-100"
+                leave-active-class="transition duration-100 ease-in"
+                leave-from-class="transform scale-100 opacity-100"
+                leave-to-class="transform scale-95 opacity-0"
+              >
+                <div v-show="majorDropdownOpen" class="absolute left-0 right-0 sm:min-w-[12rem] mt-2 py-1.5 bg-white border border-slate-100 rounded-xl shadow-2xl max-h-64 overflow-y-auto z-50 origin-top dropdown-scroll">
+                  <div @click="majorFilter = ''; majorDropdownOpen = false; triggerSearch()" 
+                       class="px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 cursor-pointer transition-colors flex items-center justify-between"
+                       :class="{ 'text-primary font-bold bg-primary/5': majorFilter === '' }">
+                    全部适用专业
+                  </div>
+                  <div v-for="m in majorOptions" :key="m" 
+                       @click="majorFilter = m; majorDropdownOpen = false; triggerSearch()" 
+                       class="px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 cursor-pointer transition-colors flex items-center justify-between"
+                       :class="{ 'text-primary font-bold bg-primary/5': majorFilter === m }">
+                    {{ m }}
+                  </div>
+                </div>
+              </transition>
             </div>
 
-            <button @click="triggerSearch" class="w-full sm:w-auto px-6 py-2.5 bg-profound-black text-white hover:bg-primary transition-colors rounded-xl text-sm font-bold shadow-md uppercase tracking-wide shrink-0">
+            <button @click="triggerSearch" class="w-full sm:w-auto px-6 py-2.5 bg-profound-black text-white hover:bg-primary transition-colors rounded-xl text-sm font-bold shadow-md uppercase tracking-wide shrink-0 z-0">
                搜索
             </button>
           </div>
@@ -58,7 +107,7 @@
       </div>
 
       <!-- Categories row -->
-      <div class="flex items-center gap-2 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      <div v-if="categories.length > 0" class="flex items-center gap-2 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <button v-for="cat in categories" :key="cat.id"
                 @click="activeCategory = cat.id; triggerSearch()"
                 class="px-4 py-1.5 rounded-lg text-[13px] font-bold transition-all whitespace-nowrap border"
@@ -137,6 +186,9 @@ const activeCategory = ref(route.query.categoryId ? parseInt(route.query.categor
 const techFilter = ref(route.query.techStack || '')
 const majorFilter = ref(route.query.major || '')
 
+const techDropdownOpen = ref(false)
+const majorDropdownOpen = ref(false)
+
 const techOptions = ['Spring Boot', 'Vue.js', 'Python', 'Machine Learning', 'React', 'Mobile App', '小程序', 'Microservices', 'Node.js']
 const majorOptions = ['计算机科学与技术', '软件工程', '信息管理与信息系统', '人工智能', '大数据', '物联网', '电子商务']
 
@@ -155,7 +207,7 @@ const { data: projRes, pending, refresh } = await useAsyncData('projects-page', 
 const { data: catRes } = await useAsyncData('categories-all', () => api('/api/categories'))
 
 const projects = computed(() => projRes.value?.data?.records || [])
-const categories = computed(() => [{ id: null, name: '全部' }, ...(catRes.value?.data || [])])
+const categories = computed(() => catRes.value?.data || [])
 
 const triggerSearch = () => {
   // Sync URL
