@@ -133,45 +133,8 @@
                 </div>
 
                 <div v-if="activeTab === 'detail'" class="space-y-12 animate-fade-in">
-                  <!-- Unified Tech Specs Header -->
-                  <div class="space-y-6">
-                    <div class="flex items-center gap-3">
-                      <div class="w-1.5 h-8 bg-primary rounded-full"></div>
-                      <h3 class="text-2xl font-display text-profound-black uppercase">核心技术架构</h3>
-                    </div>
-                    
-                    <div v-if="project.techDetails && project.techDetails.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div v-for="(group, name) in groupedTechDetails" :key="name" 
-                           class="p-8 bg-slate-50 border border-slate-100 rounded-4xl space-y-5 hover:border-primary/20 transition-colors">
-                        <h4 class="text-sm font-bold text-profound-black flex items-center gap-2 uppercase tracking-tight">
-                          <component :is="getTechIcon(name)" :size="16" class="text-primary" />
-                          {{ name }}
-                        </h4>
-                        <div class="flex flex-wrap gap-2">
-                          <span v-for="item in group" :key="item.itemName" 
-                                class="px-4 py-2 bg-white border border-slate-100 rounded-xl text-[10px] font-bold text-slate-600 shadow-sm">
-                            {{ item.itemName }}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div v-else class="flex flex-wrap gap-3">
-                      <div v-for="tag in techTags" :key="tag" 
-                           class="px-6 py-3 bg-slate-50 border border-slate-200 text-profound-black rounded-2xl text-[10px] font-bold uppercase tracking-wider animate-pulse-slow">
-                        {{ tag }}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="h-px bg-slate-100 w-full"></div>
-
                   <!-- Deep Analysis Content -->
                   <div class="space-y-6">
-                    <div class="flex items-center gap-3">
-                      <div class="w-1.5 h-8 bg-primary rounded-full"></div>
-                      <h3 class="text-2xl font-display text-profound-black uppercase">深度原理解析</h3>
-                    </div>
-                    
                     <div v-if="project.contentHtml" class="prose prose-slate max-w-none prose-img:rounded-3xl prose-headings:font-display prose-headings:uppercase">
                       <md-preview :modelValue="project.contentHtml" />
                     </div>
@@ -341,7 +304,7 @@ const mediaItems = computed(() => {
 
 const tabOptions = computed(() => [
   { id: 'overview', label: '项目总览', icon: Telescope },
-  { id: 'detail', label: '深度解析', icon: BookOpen },
+  { id: 'detail', label: '项目详情', icon: BookOpen },
   { id: 'ask', label: '在线咨询', icon: MessageCircleQuestion }
 ])
 
