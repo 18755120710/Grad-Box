@@ -310,7 +310,6 @@ onMounted(() => {
 
 <style scoped>
 .project-view-wrapper {
-  animation: canvas-fade 0.8s cubic-bezier(0.16, 1, 0.3, 1);
   padding: 0 40px 100px;
   max-width: 1400px;
   margin: 0 auto;
@@ -439,9 +438,7 @@ onMounted(() => {
 
 .asset-row-item:hover {
   background: var(--admin-surface);
-  border-color: var(--admin-primary-glow);
-  transform: translateX(8px);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.03);
+  border-color: var(--admin-border);
 }
 
 .asset-row-preview {
@@ -483,8 +480,7 @@ onMounted(() => {
   backdrop-filter: blur(2px);
 }
 
-.asset-row-preview:hover .row-preview-overlay { opacity: 1; }
-.asset-row-preview:hover .row-thumb { transform: scale(1.1); }
+.asset-row-preview:hover .row-thumb { transform: none; }
 
 .asset-name {
   font-weight: 700;
@@ -547,13 +543,7 @@ onMounted(() => {
 .asset-row-actions {
   display: flex;
   gap: 6px;
-  opacity: 0;
-  transition: 0.3s;
   justify-content: flex-end;
-}
-
-.asset-row-item:hover .asset-row-actions {
-  opacity: 1;
 }
 
 .action-btn-lite {
@@ -720,13 +710,7 @@ onMounted(() => {
   color: #fff !important;
 }
 
-@keyframes canvas-fade {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.stagger-list-enter-active { transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
-.stagger-list-enter-from { opacity: 0; transform: translateY(10px); }
+/* Removed stagger animations as per user request */
 
 @media (max-width: 1200px) {
   .seamless-canvas { grid-template-columns: 1fr; gap: 40px; }
