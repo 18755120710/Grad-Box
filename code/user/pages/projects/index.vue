@@ -1,78 +1,72 @@
 <template>
-  <div class="max-w-7xl mx-auto px-6 sm:px-8 py-24 space-y-20 relative selection:bg-primary/10">
+  <div class="max-w-7xl mx-auto px-6 sm:px-8 py-8 sm:py-12 space-y-8 relative selection:bg-primary/10">
     <!-- Background Decor -->
-    <div class="absolute top-0 right-0 -z-10 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] opacity-40"></div>
+    <div class="absolute top-0 right-0 -z-10 w-[300px] h-[300px] bg-primary/5 rounded-full blur-[100px] opacity-40"></div>
 
-    <!-- Header & Categories -->
-    <header class="space-y-16 text-center max-w-5xl mx-auto">
-      <div class="space-y-6 animate-fade-in-up">
-        <h1 class="text-[clamp(2.5rem,7vw,5rem)] font-display text-profound-black tracking-tighter-profound uppercase italic leading-[0.9]">
-          探索毕业设计<br />
-          <span class="text-primary italic not-italic font-black drop-shadow-sm">案例中心</span>
-        </h1>
-        <p class="text-slate-400 text-lg font-bold max-w-2xl mx-auto leading-relaxed uppercase tracking-wider opacity-80">
-          Curated Excellence · Academic Intelligence · Structural Integrity
-        </p>
+    <!-- Compact Header -->
+    <header class="flex flex-col gap-6">
+      <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+        <!-- Title area -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+            <GraduationCap :size="24" />
+          </div>
+          <div>
+            <h1 class="text-2xl font-display text-profound-black tracking-tight flex items-center gap-2">
+              项目<span class="text-primary italic font-black">案例库</span>
+            </h1>
+          </div>
+        </div>
+
+        <!-- Integrated Search & Filter Group -->
+        <div class="flex flex-col md:flex-row items-center gap-3 w-full xl:w-auto">
+          <!-- Search -->
+          <div class="relative w-full md:w-auto flex-1 md:flex-none">
+            <Search :size="16" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 z-10" />
+            <input v-model="searchQuery" type="text" placeholder="搜索关键词、技术栈..." @keyup.enter="triggerSearch"
+                   class="w-full md:w-64 pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm transition-all text-slate-700" />
+          </div>
+          
+          <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+            <!-- Tech Filter -->
+            <div class="relative w-full sm:w-auto flex-1 sm:flex-none">
+              <select v-model="techFilter" @change="triggerSearch"
+                      class="w-full pl-9 pr-8 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm text-slate-600">
+                <option value="">全部技术方向</option>
+                <option v-for="t in techOptions" :key="t" :value="t">{{ t }}</option>
+              </select>
+              <Cpu :size="14" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <ChevronDown :size="14" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            </div>
+
+            <!-- Major Filter -->
+            <div class="relative w-full sm:w-auto flex-1 sm:flex-none">
+              <select v-model="majorFilter" @change="triggerSearch"
+                      class="w-full pl-9 pr-8 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm text-slate-600">
+                <option value="">全部专业门类</option>
+                <option v-for="m in majorOptions" :key="m" :value="m">{{ m }}</option>
+              </select>
+              <GraduationCap :size="14" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <ChevronDown :size="14" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            </div>
+
+            <button @click="triggerSearch" class="w-full sm:w-auto px-6 py-2.5 bg-profound-black text-white hover:bg-primary transition-colors rounded-xl text-sm font-bold shadow-md uppercase tracking-wide shrink-0">
+               搜索
+            </button>
+          </div>
+        </div>
       </div>
-      
-      <!-- Search Card (Pro Max V2) -->
-      <div class="glass-premium p-2 rounded-[32px] flex items-center gap-2 group max-w-2xl mx-auto transition-all focus-within:ring-8 focus-within:ring-primary/5 border border-white/40 shadow-3xl shadow-slate-200/40">
-        <div class="ml-6 flex items-center gap-3 text-slate-300 group-focus-within:text-primary transition-colors">
-          <Search :size="20" />
-        </div>
-        <input v-model="searchQuery" type="text" placeholder="Search by tech stack, keywords or major..." @keyup.enter="triggerSearch"
-               class="flex-1 px-4 py-4 bg-transparent text-base font-bold text-profound-black outline-none placeholder:text-slate-300 uppercase tracking-tight" />
-        
-        <!-- Command Indicator -->
-        <div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-black text-slate-300 uppercase tracking-widest mr-2">
-          <span class="text-xs">⌘</span> K
-        </div>
 
-        <button @click="triggerSearch" class="btn-primary-filled h-14 px-10 rounded-2xl">
-           SEARCH
+      <!-- Categories row -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <button v-for="cat in categories" :key="cat.id"
+                @click="activeCategory = cat.id; triggerSearch()"
+                class="px-4 py-1.5 rounded-lg text-[13px] font-bold transition-all whitespace-nowrap border"
+                :class="activeCategory === cat.id 
+                  ? 'bg-primary text-white border-primary shadow-sm' 
+                  : 'bg-white text-slate-500 border-slate-200 hover:border-primary/30 hover:bg-slate-50'">
+          {{ cat.name }}
         </button>
-      </div>
-
-      <!-- Advanced Filter Group (Pro Max V2) -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto pt-4">
-        <div class="space-y-2 text-left group">
-          <label class="label-premium flex items-center gap-2 group-focus-within:text-primary transition-colors">
-            <Cpu :size="12" /> 技术架构 / Architecture
-          </label>
-          <div class="relative">
-            <select v-model="techFilter" @change="triggerSearch"
-                   class="input-premium appearance-none pr-12 cursor-pointer shadow-sm">
-              <option value="">全部技术方向</option>
-              <option v-for="t in techOptions" :key="t" :value="t">{{ t }}</option>
-            </select>
-            <ChevronDown class="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none group-focus-within:text-primary transition-colors" :size="16" />
-          </div>
-        </div>
-        <div class="space-y-2 text-left group">
-          <label class="label-premium flex items-center gap-2 group-focus-within:text-primary transition-colors">
-            <GraduationCap :size="12" /> 适用专业 / Major
-          </label>
-          <div class="relative">
-            <select v-model="majorFilter" @change="triggerSearch"
-                   class="input-premium appearance-none pr-12 cursor-pointer shadow-sm">
-              <option value="">全部专业门类</option>
-              <option v-for="m in majorOptions" :key="m" :value="m">{{ m }}</option>
-            </select>
-            <ChevronDown class="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none group-focus-within:text-primary transition-colors" :size="16" />
-          </div>
-        </div>
-      </div>
-
-      <!-- Segmented Categories (Pro Max V2) -->
-      <div class="flex items-center justify-center pt-8">
-        <div class="inline-flex p-1.5 bg-slate-100 border border-slate-200/50 rounded-2xl gap-1">
-          <button v-for="cat in categories" :key="cat.id"
-                  @click="activeCategory = cat.id; triggerSearch()"
-                  class="px-6 py-2.5 rounded-xl text-[11px] font-bold transition-all duration-500 uppercase tracking-widest whitespace-nowrap"
-                  :class="activeCategory === cat.id ? 'bg-white text-profound-black shadow-lg scale-[1.02] border-subtle' : 'text-slate-400 hover:text-slate-600'">
-            {{ cat.name }}
-          </button>
-        </div>
       </div>
     </header>
 
