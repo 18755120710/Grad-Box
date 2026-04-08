@@ -58,10 +58,11 @@ export const uploadLargeFile = async (file: File, options: UploadOptions = {}) =
         if (onStatusChange) onStatusChange('calculating')
         const identifier = await calculateMd5(file, chunkSize)
 
-        // 2. 检查已上传的分片 (断点续传预检)
+        // 2. 检查已上传的分片 (断点续传预检，允许 30s)
         const checkRes: any = await request.get('/api/file/upload/check', {
             params: { identifier },
-            signal
+            signal,
+            timeout: 30000
         })
 
         const { uploadedChunks, uploadId } = checkRes.data
@@ -96,7 +97,10 @@ export const uploadLargeFile = async (file: File, options: UploadOptions = {}) =
             formData.append('index', index.toString())
             formData.append('file', chunkBlob)
 
-            await request.post('/api/file/upload/chunk', formData, { signal })
+            await request.post('/api/file/upload/chunk', formData, {
+                signal,
+                timeout: 60000 // 分片上传允许 1 分钟
+            })
 
             uploadedCount++
             if (onProgress) {
@@ -124,7 +128,8 @@ export const uploadLargeFile = async (file: File, options: UploadOptions = {}) =
         // 4. 合并请求
         const completeRes: any = await request.post('/api/file/upload/complete', null, {
             params: { uploadId, fileName: file.name, totalChunks },
-            signal
+            signal,
+            timeout: 60000 // 合并涉及 MinIO 内部操作，允许 1 分钟
         })
 
         if (onStatusChange) onStatusChange('completed')
