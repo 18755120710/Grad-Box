@@ -3,6 +3,8 @@ package com.material.manaement.controller;
 import com.material.manaement.common.Result;
 import com.material.manaement.config.MinioConfig;
 import io.minio.BucketExistsArgs;
+import io.minio.ComposeObjectArgs;
+import io.minio.ComposeSource;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
@@ -19,6 +21,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -59,20 +66,7 @@ public class FileController {
             String objectName = folder + UUID.randomUUID() + extension;
 
             // 确保存储桶存在并设置为公开读取
-            boolean found = minioClient.bucketExists(
-                    BucketExistsArgs.builder().bucket(minioConfig.getBucket()).build());
-            if (!found) {
-                minioClient.makeBucket(
-                        MakeBucketArgs.builder().bucket(minioConfig.getBucket()).build());
-            }
-
-            // 强制设置公开读取策略 (确保之前创建的私有桶也能正常访问)
-            String policy = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"*\"]},\"Action\":[\"s3:GetBucketLocation\",\"s3:ListBucket\"],\"Resource\":[\"arn:aws:s3:::"
-                    + minioConfig.getBucket()
-                    + "\"]},{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"*\"]},\"Action\":[\"s3:GetObject\"],\"Resource\":[\"arn:aws:s3:::"
-                    + minioConfig.getBucket() + "/*\"]}]}";
-            minioClient.setBucketPolicy(
-                    SetBucketPolicyArgs.builder().bucket(minioConfig.getBucket()).config(policy).build());
+            checkAndCreateBucket();
 
             minioClient.putObject(
                     PutObjectArgs.builder()
@@ -89,6 +83,118 @@ public class FileController {
             log.error("MinIO 上传异常: ", e);
             return Result.failed("上传失败: " + e.getMessage());
         }
+    }
+
+    @Operation(summary = "初始化分片上传")
+    @PostMapping("/upload/init")
+    public Result<Map<String, Object>> initChunkUpload(@RequestParam("fileName") String fileName) {
+        String uploadId = UUID.randomUUID().toString();
+        String extension = "";
+        if (fileName.contains(".")) {
+            extension = fileName.substring(fileName.lastIndexOf("."));
+        }
+        Map<String, Object> data = new HashMap<>();
+        data.put("uploadId", uploadId);
+        data.put("extension", extension);
+        return Result.success(data);
+    }
+
+    @Operation(summary = "上传分片")
+    @PostMapping("/upload/chunk")
+    public Result<String> uploadChunk(
+            @RequestParam("uploadId") String uploadId,
+            @RequestParam("index") Integer index,
+            @RequestParam("file") MultipartFile file) {
+        try {
+            String objectName = "chunks/" + uploadId + "/" + index;
+            // 确保桶存在
+            checkAndCreateBucket();
+
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(minioConfig.getBucket())
+                            .object(objectName)
+                            .stream(file.getInputStream(), file.getSize(), -1)
+                            .contentType("application/octet-stream")
+                            .build());
+            return Result.success("分片 " + index + " 上传成功");
+        } catch (Exception e) {
+            log.error("分片上传异常: ", e);
+            return Result.failed("分片上传失败: " + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "完成分片上传")
+    @PostMapping("/upload/complete")
+    public Result<String> completeChunkUpload(
+            @RequestParam("uploadId") String uploadId,
+            @RequestParam("fileName") String fileName,
+            @RequestParam("totalChunks") Integer totalChunks) {
+        try {
+            String extension = "";
+            if (fileName.contains(".")) {
+                extension = fileName.substring(fileName.lastIndexOf("."));
+            }
+
+            // 目录分配逻辑优化
+            String folder = "others/";
+            String ext = extension.toLowerCase();
+            if (Arrays.asList(".jpg", ".jpeg", ".png", ".gif", ".webp").contains(ext)) {
+                folder = "images/";
+            } else if (Arrays.asList(".mp4", ".mov", ".avi", ".mkv").contains(ext)) {
+                folder = "videos/";
+            }
+
+            String finalObjectName = folder + UUID.randomUUID() + extension;
+
+            List<ComposeSource> sources = new ArrayList<>();
+            for (int i = 0; i < totalChunks; i++) {
+                sources.add(ComposeSource.builder()
+                        .bucket(minioConfig.getBucket())
+                        .object("chunks/" + uploadId + "/" + i)
+                        .build());
+            }
+
+            minioClient.composeObject(
+                    ComposeObjectArgs.builder()
+                            .bucket(minioConfig.getBucket())
+                            .object(finalObjectName)
+                            .sources(sources)
+                            .build());
+
+            // 异步清理分片可以提升响应速度，但这里同步清理以保证一致性
+            for (int i = 0; i < totalChunks; i++) {
+                minioClient.removeObject(
+                        RemoveObjectArgs.builder()
+                                .bucket(minioConfig.getBucket())
+                                .object("chunks/" + uploadId + "/" + i)
+                                .build());
+            }
+
+            String fileUrl = minioConfig.getPublicUrl() + "/" + finalObjectName;
+            log.info("大文件分片合并成功: {}", fileUrl);
+            return Result.success(fileUrl);
+        } catch (Exception e) {
+            log.error("合并分片异常: ", e);
+            return Result.failed("合并失败: " + e.getMessage());
+        }
+    }
+
+    private void checkAndCreateBucket() throws Exception {
+        boolean found = minioClient.bucketExists(
+                BucketExistsArgs.builder().bucket(minioConfig.getBucket()).build());
+        if (!found) {
+            minioClient.makeBucket(
+                    MakeBucketArgs.builder().bucket(minioConfig.getBucket()).build());
+        }
+
+        // 强制设置公开读取策略
+        String policy = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"*\"]},\"Action\":[\"s3:GetBucketLocation\",\"s3:ListBucket\"],\"Resource\":[\"arn:aws:s3:::"
+                + minioConfig.getBucket()
+                + "\"]},{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"*\"]},\"Action\":[\"s3:GetObject\"],\"Resource\":[\"arn:aws:s3:::"
+                + minioConfig.getBucket() + "/*\"]}]}";
+        minioClient.setBucketPolicy(
+                SetBucketPolicyArgs.builder().bucket(minioConfig.getBucket()).config(policy).build());
     }
 
     @Operation(summary = "通过 MinIO 删除文件")
