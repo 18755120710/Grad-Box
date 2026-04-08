@@ -27,6 +27,11 @@ service.interceptors.response.use(
         const res = response.data
         if (res.code !== 200) {
             ElMessage.error(res.message || 'Error')
+            if (res.code === 401) {
+                const authStore = useAuthStore()
+                authStore.logout()
+                window.location.href = '/login'
+            }
             return Promise.reject(new Error(res.message || 'Error'))
         } else {
             return res

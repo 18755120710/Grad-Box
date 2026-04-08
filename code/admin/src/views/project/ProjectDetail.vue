@@ -40,13 +40,24 @@
               </el-form-item>
               
               <el-form-item prop="description" class="no-label-item description-item">
-                <el-input
-                  v-model="form.description"
-                  type="textarea"
-                  :rows="2"
-                  placeholder="请输入资产简要描述（显示在列表页卡片中）..."
-                  class="description-input-v3"
-                />
+                <div class="description-header-lite">
+                  <el-input
+                    v-model="form.description"
+                    type="textarea"
+                    :rows="2"
+                    placeholder="请输入资产简要描述（显示在列表页卡片中）..."
+                    class="description-input-v3"
+                  />
+                  <el-button 
+                    link 
+                    type="primary" 
+                    @click="handleAiSummary" 
+                    :loading="aiLoading"
+                    class="btn-ai-magic"
+                  >
+                    <lucide-sparkles :size="14" /> AI 智能生成
+                  </el-button>
+                </div>
               </el-form-item>
             </div>
             
@@ -369,7 +380,8 @@ import {
   LucideArrowLeft,
   LucideLayers,
   LucideEye,
-  LucideFileText
+  LucideFileText,
+  LucideSparkles
 } from 'lucide-vue-next'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
@@ -380,6 +392,7 @@ const authStore = useAuthStore()
 const isEdit = ref(!!route.params.id && route.params.id !== 'new')
 const loading = ref(false)
 const submitting = ref(false)
+const aiLoading = ref(false)
 const categories = ref<any[]>([])
 const formRef = ref()
 
@@ -616,27 +629,47 @@ const handlePrdImport = (file: any) => {
     if (!content) return
 
     form.contentHtml = content
-    ElMessage.success('需求文档已导入内容区域')
+    ElMessage.success('需求文档已导入内容区域信号')
 
-    // Extract summary
-    const summary = extractSummary(content)
-    if (summary) {
+    // Extract summary using AI if possible, otherwise fallback
+    handleAiSummary()
+  }
+  reader.readAsText(rawFile)
+}
+
+const handleAiSummary = async () => {
+  if (!form.contentHtml || form.contentHtml.length < 20) {
+    return ElMessage.warning('请先输入或导入足够的深度解析内容（至少20字）以供 AI 分析')
+  }
+
+  aiLoading.value = true
+  try {
+    const res: any = await request.post('/api/ai/generate-summary', {
+      content: form.contentHtml
+    })
+    
+    if (res.code === 200 || res.data) {
       if (form.description) {
-        ElMessageBox.confirm('检测到文档内容，是否自动覆盖当前的资简要描述？', '智能助手', {
+        await ElMessageBox.confirm('AI 已生成新的摘要建议，是否覆盖当前内容？', '智能助手', {
           confirmButtonText: '覆盖',
           cancelButtonText: '保留',
           type: 'info'
-        }).then(() => {
-          form.description = summary
-          ElMessage.success('摘要已智能同步')
-        }).catch(() => {})
-      } else {
-        form.description = summary
-        ElMessage.success('摘要已智能同步')
+        })
       }
+      form.description = res.data
+      ElMessage.success('摘要已通过 AI 智能提炼')
     }
+  } catch (err: any) {
+    console.error('AI Summary failed:', err)
+    // 如果后台未配置 API KEY，尝试使用本地提取
+    const localSummary = extractSummary(form.contentHtml)
+    if (localSummary && !form.description) {
+      form.description = localSummary
+      ElMessage.info('已通过本地算法完成基础摘要提取（AI 调用失败）')
+    }
+  } finally {
+    aiLoading.value = false
   }
-  reader.readAsText(rawFile)
 }
 
 const extractSummary = (content: string) => {
@@ -685,6 +718,35 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+.description-header-lite {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-ai-magic {
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 600;
+  color: #7c3aed; /* 浅紫色代表 AI */
+  background: rgba(124, 58, 237, 0.05);
+  padding: 4px 10px;
+  border-radius: 4px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+}
+
+.btn-ai-magic:hover {
+  background: rgba(124, 58, 237, 0.1);
+  border-color: rgba(124, 58, 237, 0.2);
+  transform: translateY(-1px);
+}
+
+.btn-ai-magic :deep(.lucide) {
+  margin-right: 4px;
 }
 
 .btn-import-prd {

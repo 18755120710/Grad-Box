@@ -8,6 +8,12 @@ spring:
     multipart:
       max-file-size: 100MB
       max-request-size: 100MB
+  ai:
+    dashscope:
+      api-key: sk-96d500564e88456288226eea61164511
+      chat:
+        options:
+          model: qwen-plus
 
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml

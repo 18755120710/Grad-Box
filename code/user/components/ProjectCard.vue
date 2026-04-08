@@ -57,7 +57,7 @@ const catStyles = computed(() => getCategoryStyles(props.project.major || props.
           <div v-if="project.tags" class="flex gap-1">
             <span v-for="tag in project.tags.split(',').slice(0, 2)" :key="tag"
                   class="text-[8px] font-bold text-primary/60 px-1.5 py-0.5 bg-primary/5 rounded border border-primary/10">
-              #{{ tag }}
+              {{ tag }}
             </span>
           </div>
         </div>
