@@ -57,11 +57,17 @@ public class ConsultationController {
 
     @GetMapping
     public Result allConsultations(@RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize) {
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) Long projectId) {
         Page<Consultation> page = new Page<>(pageNum, pageSize);
-        Page<Consultation> result = consultationService.page(page,
-                new LambdaQueryWrapper<Consultation>().orderByDesc(Consultation::getPriority)
-                        .orderByDesc(Consultation::getCreateTime));
+        LambdaQueryWrapper<Consultation> wrapper = new LambdaQueryWrapper<Consultation>();
+        if (projectId != null) {
+            wrapper.eq(Consultation::getProjectId, projectId);
+        }
+        wrapper.orderByDesc(Consultation::getPriority)
+                .orderByDesc(Consultation::getCreateTime);
+
+        Page<Consultation> result = consultationService.page(page, wrapper);
 
         // Populate project titles
         if (result.getRecords() != null && !result.getRecords().isEmpty()) {
