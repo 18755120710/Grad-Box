@@ -93,33 +93,47 @@ public class FileController {
             @RequestParam("identifier") String identifier) {
         try {
             String prefix = "chunks/" + identifier + "/";
-            Iterable<io.minio.Result<Item>> results = minioClient.listObjects(
-                    ListObjectsArgs.builder()
-                            .bucket(minioConfig.getBucket())
-                            .prefix(prefix)
-                            .recursive(true)
-                            .build());
 
+            int retryCount = 0;
+            int maxRetries = 3;
             List<Integer> uploadedChunks = new ArrayList<>();
-            for (io.minio.Result<Item> result : results) {
-                Item item = result.get();
-                String objectName = item.objectName();
-                // objectName 格式为 chunks/{identifier}/{index}
-                String indexStr = objectName.substring(objectName.lastIndexOf("/") + 1);
+
+            while (retryCount < maxRetries) {
                 try {
-                    uploadedChunks.add(Integer.parseInt(indexStr));
-                } catch (NumberFormatException ignored) {
+                    Iterable<io.minio.Result<Item>> results = minioClient.listObjects(
+                            ListObjectsArgs.builder()
+                                    .bucket(minioConfig.getBucket())
+                                    .prefix(prefix)
+                                    .recursive(true)
+                                    .build());
+
+                    uploadedChunks.clear();
+                    for (io.minio.Result<Item> result : results) {
+                        Item item = result.get();
+                        String objectName = item.objectName();
+                        String indexStr = objectName.substring(objectName.lastIndexOf("/") + 1);
+                        try {
+                            uploadedChunks.add(Integer.parseInt(indexStr));
+                        } catch (NumberFormatException ignored) {
+                        }
+                    }
+                    break; // Success
+                } catch (Exception e) {
+                    retryCount++;
+                    log.warn("检查分片重试 {}/{}: {}", retryCount, maxRetries, e.getMessage());
+                    if (retryCount >= maxRetries)
+                        throw e;
+                    Thread.sleep(500); // 间隔重试
                 }
             }
 
             Map<String, Object> data = new HashMap<>();
             data.put("uploadedChunks", uploadedChunks);
-            // uploadId 直接复用 identifier，简化逻辑
             data.put("uploadId", identifier);
             return com.material.manaement.common.Result.success(data);
         } catch (Exception e) {
-            log.error("检查分片异常: ", e);
-            return com.material.manaement.common.Result.failed("分片检查失败");
+            log.error("检查分片最终失败: identifier={}", identifier, e);
+            return com.material.manaement.common.Result.failed("分片预检失败，请重试");
         }
     }
 

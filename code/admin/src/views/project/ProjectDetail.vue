@@ -166,10 +166,17 @@
                         </el-upload>
                       </template>
                     </el-input>
+                    
+                    <!-- Global Overlay for this specific media item -->
                     <div v-if="(mediaProgress[index] ?? 0) > 0 && (mediaProgress[index] ?? 0) < 100" class="asset-upload-overlay">
-                      <el-progress type="circle" :percentage="mediaProgress[index] ?? 0" :width="60" :stroke-width="3" color="#7c3aed" />
-                      <div class="mini-status-hint">{{ mediaStatus[index] === 'calculating' ? '校验...' : '传输...' }}</div>
-                      <el-button link class="mini-pause-btn" @click.stop="pauseMediaUpload(index)">
+                      <el-progress type="circle" :percentage="mediaProgress[index] ?? 0" :width="50" :stroke-width="3" color="#7c3aed" />
+                      <div class="mini-status-hint">
+                        {{ mediaStatus[index] === 'calculating' ? '校验...' : (mediaStatus[index] === 'paused' ? '已暂停' : '传输...') }}
+                      </div>
+                      <el-button v-if="mediaStatus[index] === 'paused'" link class="mini-resume-btn" @click.stop="() => handleMediaUpload({ file: null /* Here's a catch */ }, index)">
+                        <lucide-play :size="16" />
+                      </el-button>
+                      <el-button v-else link class="mini-pause-btn" @click.stop="pauseMediaUpload(index)">
                         <lucide-circle-stop :size="16" />
                       </el-button>
                     </div>
@@ -239,20 +246,25 @@
                 </div>
                 <div class="canvas-cover-placeholder" v-else :class="{ 'loading': coverProgress > 0 && coverProgress < 100 }">
                   <div class="placeholder-content">
-                    <div v-if="coverProgress > 0 && coverProgress < 100" class="upload-overlay">
-                      <el-progress type="circle" :percentage="coverProgress" :stroke-width="4" :width="80" color="#7c3aed" />
-                      <div class="upload-status-hint">{{ coverStatus === 'calculating' ? '计算校验和...' : '上传中...' }}</div>
-                      <el-button link class="pause-btn" @click.stop="pauseCoverUpload">
-                        <lucide-circle-stop :size="20" />
-                      </el-button>
+                    <div class="placeholder-icon-box">
+                      <lucide-plus :size="24" />
                     </div>
-                    <template v-else>
-                      <div class="placeholder-icon-box">
-                        <lucide-plus :size="24" />
-                      </div>
-                      <span class="p-tip">主视图初始化</span>
-                    </template>
+                    <span class="p-tip">主视图初始化</span>
                   </div>
+                </div>
+
+                <!-- Global Cover Upload Overlay -->
+                <div v-if="coverProgress > 0 && coverProgress < 100" class="upload-overlay">
+                  <el-progress type="circle" :percentage="coverProgress" :stroke-width="4" :width="80" color="#7c3aed" />
+                  <div class="upload-status-hint">
+                    {{ coverStatus === 'calculating' ? '计算校验和...' : (coverStatus === 'paused' ? '上传已暂停' : '正在上传中...') }}
+                  </div>
+                  <el-button v-if="coverStatus === 'paused'" type="primary" circle class="resume-btn-large" @click.stop="handleCoverUpload({ file: null })">
+                    <lucide-play :size="20" />
+                  </el-button>
+                  <el-button v-else link class="pause-btn" @click.stop="pauseCoverUpload">
+                    <lucide-circle-stop :size="20" />
+                  </el-button>
                 </div>
               </el-upload>
             </div>
@@ -354,14 +366,19 @@
                     </el-button>
                   </div>
                 </div>
-                <el-button v-else link class="btn-attachment-placeholder" :loading="(attachmentProgress > 0 && attachmentProgress < 100) || attachmentStatus === 'calculating'">
+                <el-button v-else link class="btn-attachment-placeholder">
                   <lucide-paperclip :size="14" />
-                  <span>
-                    {{ attachmentStatus === 'calculating' ? '计算校验和...' : (attachmentProgress > 0 && attachmentProgress < 100 ? `上传中 ${attachmentProgress}%` : '上传资源附件 (Zip/PDF...)') }}
+                  <span class="attachment-text-status">
+                    {{ attachmentStatus === 'calculating' ? '计算校验和...' : (attachmentProgress > 0 && attachmentProgress < 100 ? `正在上传 ${attachmentProgress}%` : '上传资源附件 (Zip/PDF...)') }}
                   </span>
-                  <el-button v-if="attachmentProgress > 0 && attachmentProgress < 100" link class="attachment-pause-btn" @click.stop="pauseAttachmentUpload">
-                    <lucide-circle-stop :size="14" />
-                  </el-button>
+                  <div v-if="attachmentProgress > 0 && attachmentProgress < 100" class="attachment-ops-mini">
+                    <el-button v-if="attachmentStatus === 'paused'" link class="attachment-resume-btn" @click.stop="handleAttachmentUpload({ file: null })">
+                      <lucide-play :size="14" />
+                    </el-button>
+                    <el-button v-else link class="attachment-pause-btn" @click.stop="pauseAttachmentUpload">
+                      <lucide-circle-stop :size="14" />
+                    </el-button>
+                  </div>
                 </el-button>
               </el-upload>
             </div>
@@ -461,14 +478,17 @@ const form = reactive({
 const coverProgress = ref(0)
 const coverStatus = ref<string>('')
 const coverController = ref<AbortController | null>(null)
+const coverFile = ref<File | null>(null)
 
 const attachmentProgress = ref(0)
 const attachmentStatus = ref<string>('')
 const attachmentController = ref<AbortController | null>(null)
+const attachmentFile = ref<File | null>(null)
 
 const mediaProgress = ref<Record<number, number>>({})
 const mediaStatus = ref<Record<number, string>>({})
 const mediaControllers = ref<Record<number, AbortController | null>>({})
+const mediaFiles = ref<Record<number, File | null>>({})
 
 const isUploading = computed(() => {
   if (coverProgress.value > 0 && coverProgress.value < 100 && coverStatus.value === 'uploading') return true
@@ -479,11 +499,15 @@ const isUploading = computed(() => {
 // --- Attachment Handlers ---
 const handleAttachmentUpload = async (options: any) => {
   const { file } = options
+  if (file) attachmentFile.value = file
+  const currentFile = file || attachmentFile.value
+  if (!currentFile) return
+
   if (attachmentController.value) attachmentController.value.abort()
   attachmentController.value = new AbortController()
   
   try {
-    const url = await uploadLargeFile(file, {
+    const url = await uploadLargeFile(currentFile, {
       onProgress: (p) => { attachmentProgress.value = p },
       onStatusChange: (s) => { attachmentStatus.value = s },
       signal: attachmentController.value.signal
@@ -639,11 +663,15 @@ const handleDeleteCover = async () => {
 
 const handleCoverUpload = async (options: any) => {
   const { file } = options
+  if (file) coverFile.value = file
+  const currentFile = file || coverFile.value
+  if (!currentFile) return
+
   if (coverController.value) coverController.value.abort()
   coverController.value = new AbortController()
 
   try {
-    const url = await uploadLargeFile(file, {
+    const url = await uploadLargeFile(currentFile, {
       onProgress: (p) => { coverProgress.value = p },
       onStatusChange: (s) => { coverStatus.value = s },
       signal: coverController.value.signal
@@ -671,12 +699,16 @@ const pauseCoverUpload = () => {
 
 const handleMediaUpload = async (options: any, index: number) => {
   const { file } = options
+  if (file) mediaFiles.value[index] = file
+  const currentFile = file || mediaFiles.value[index]
+  if (!currentFile) return
+
   if (mediaControllers.value[index]) mediaControllers.value[index]?.abort()
   const controller = new AbortController()
   mediaControllers.value[index] = controller
   
   try {
-    const url = await uploadLargeFile(file, {
+    const url = await uploadLargeFile(currentFile, {
       onProgress: (p) => {
         mediaProgress.value = { ...mediaProgress.value, [index]: p }
       },
@@ -1217,13 +1249,15 @@ onMounted(() => {
   font-weight: 600;
 }
 
-.pause-btn, .mini-pause-btn {
+.pause-btn, .mini-pause-btn, .attachment-pause-btn {
   color: #ef4444 !important;
   opacity: 0.8;
   transition: all 0.2s;
+  pointer-events: auto !important; /* Ensure clickable */
+  cursor: pointer !important;
 }
 
-.pause-btn:hover, .mini-pause-btn:hover {
+.pause-btn:hover, .mini-pause-btn:hover, .attachment-pause-btn:hover {
   opacity: 1;
   transform: scale(1.1);
 }
