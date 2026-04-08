@@ -157,13 +157,8 @@
                     <el-input v-model="media.mediaUrl" placeholder="输入链接或点击右侧上传..." class="input-minimal">
                       <template #append>
                         <el-upload
-                          :action="uploadUrl"
-                          :headers="uploadHeaders"
                           :show-file-list="false"
-                          :before-upload="() => handleMediaBeforeUpload(index)"
-                          :on-success="(res: any) => handleMediaUploadSuccess(res, index)"
-                          :on-progress="(evt: any) => handleMediaProgress(evt, index)"
-                          :on-error="() => handleMediaError(index)"
+                          :http-request="(options: any) => handleMediaUpload(options, index)"
                         >
                           <el-button link :disabled="(mediaProgress[index] ?? 0) > 0 && (mediaProgress[index] ?? 0) < 100" class="upload-trigger-btn">
                             <lucide-cloud-upload :size="14" />
@@ -222,13 +217,8 @@
             <div class="seamless-cover-uploader">
               <el-upload
                 class="uploader-canvas"
-                :action="uploadUrl"
-                :headers="uploadHeaders"
                 :show-file-list="false"
-                :before-upload="handleCoverBeforeUpload"
-                :on-success="handleCoverSuccess"
-                :on-progress="handleCoverProgress"
-                :on-error="handleCoverError"
+                :http-request="handleCoverUpload"
               >
                 <div class="canvas-cover-preview" v-if="form.coverImage">
                   <img :src="form.coverImage" class="full-cover-image" />
@@ -337,6 +327,33 @@
               </el-input>
             </div>
           </div>
+
+          <div class="support-block attachment-block">
+            <h4 class="support-title">资产附件</h4>
+            <div class="attachment-upload-v2">
+              <el-upload
+                :show-file-list="false"
+                :http-request="handleAttachmentUpload"
+              >
+                <div v-if="form.downloadUrl" class="attachment-info-card">
+                  <div class="file-icon-box">
+                    <lucide-file-archive v-if="isArchive(form.downloadUrl)" :size="16" />
+                    <lucide-file v-else :size="16" />
+                  </div>
+                  <div class="file-details">
+                    <span class="file-name">{{ getFileName(form.downloadUrl) }}</span>
+                    <el-button link type="danger" @click.stop="handleDeleteAttachment" class="btn-nano-delete">
+                      <lucide-trash-2 :size="12" />
+                    </el-button>
+                  </div>
+                </div>
+                <el-button v-else link class="btn-attachment-placeholder" :loading="attachmentProgress > 0 && attachmentProgress < 100">
+                  <lucide-paperclip :size="14" />
+                  <span>{{ attachmentProgress > 0 ? `上传中 ${attachmentProgress}%` : '上传资源附件 (Zip/PDF...)' }}</span>
+                </el-button>
+              </el-upload>
+            </div>
+          </div>
         </div>
       </aside>
     </div>
@@ -361,6 +378,7 @@ import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox, type ElInput } from 'element-plus'
 import request from '@/utils/request'
+import { uploadLargeFile } from '@/utils/upload'
 import { useAuthStore } from '@/stores/auth'
 import { 
   LucideImage,
@@ -381,7 +399,10 @@ import {
   LucideLayers,
   LucideEye,
   LucideFileText,
-  LucideSparkles
+  LucideSparkles,
+  LucideFileArchive,
+  LucideFile,
+  LucidePaperclip
 } from 'lucide-vue-next'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
@@ -408,11 +429,6 @@ const handlePreview = (media: any) => {
   previewVisible.value = true
 }
 
-const uploadUrl = 'http://localhost:8080/api/file/upload'
-const uploadHeaders = {
-  Authorization: (authStore.tokenHead || '') + (authStore.token || '')
-}
-
 // --- Form State ---
 const form = reactive({
   id: route.params.id === 'new' ? undefined : Number(route.params.id),
@@ -427,16 +443,61 @@ const form = reactive({
   price: 0,
   status: 1,
   tags: [] as string[],
-  medias: [] as any[]
+  medias: [] as any[],
+  downloadUrl: ''
 })
 
 // --- Upload Progress State ---
 const coverProgress = ref(0)
+const attachmentProgress = ref(0)
 const mediaProgress = ref<Record<number, number>>({})
 const isUploading = computed(() => {
   if (coverProgress.value > 0 && coverProgress.value < 100) return true
+  if (attachmentProgress.value > 0 && attachmentProgress.value < 100) return true
   return Object.values(mediaProgress.value).some(p => p > 0 && p < 100)
 })
+
+// --- Attachment Handlers ---
+const handleAttachmentUpload = async (options: any) => {
+  const { file } = options
+  attachmentProgress.value = 1
+  try {
+    const url = await uploadLargeFile(file, {
+      onProgress: (p) => { attachmentProgress.value = p }
+    })
+    form.downloadUrl = url
+    attachmentProgress.value = 100
+    ElMessage.success('附件上传成功')
+  } catch (e) {
+    attachmentProgress.value = 0
+    ElMessage.error('附件上传失败')
+  }
+}
+
+const handleDeleteAttachment = async () => {
+  if (!form.downloadUrl) return
+  try {
+    await ElMessageBox.confirm('确认删除当前附件并同步清理云端文件？', '警告', { type: 'warning' })
+    await request.delete('/api/file/delete', { params: { url: form.downloadUrl } })
+    form.downloadUrl = ''
+    attachmentProgress.value = 0
+    ElMessage.success('附件已移除')
+  } catch (e) {
+    if (e === 'cancel') return
+    ElMessage.error('清理失败')
+  }
+}
+
+const getFileName = (url: string) => {
+  if (!url) return ''
+  return url.substring(url.lastIndexOf('/') + 1)
+}
+
+const isArchive = (url: string) => {
+  if (!url) return false
+  const ext = url.substring(url.lastIndexOf('.')).toLowerCase()
+  return ['.zip', '.rar', '.7z', '.gz', '.tar'].includes(ext)
+}
 
 const rules = {
   title: [{ required: true, message: '资产标题不可为空', trigger: 'blur' }],
@@ -541,59 +602,45 @@ const handleDeleteCover = async () => {
   }
 }
 
-const handleCoverBeforeUpload = () => {
+const handleCoverUpload = async (options: any) => {
+  const { file } = options
   coverProgress.value = 1
-  return true
-}
-
-const handleCoverProgress = (evt: any) => {
-  coverProgress.value = Math.round(evt.percent)
-}
-
-const handleCoverSuccess = (res: any) => {
-  form.coverImage = res.data
-  coverProgress.value = 100
-  ElMessage.success('封面上传成功')
-}
-
-const handleCoverError = () => {
-  coverProgress.value = 0
-  ElMessage.error('封面上传失败')
-}
-
-const handleMediaBeforeUpload = (index: number) => {
-  mediaProgress.value[index] = 1
-  return true
-}
-
-const handleMediaProgress = (evt: any, index: number) => {
-  // Ensure the progress is reactive and triggers UI update
-  mediaProgress.value = {
-    ...mediaProgress.value,
-    [index]: Math.round(evt.percent)
+  try {
+    const url = await uploadLargeFile(file, {
+      onProgress: (p) => { coverProgress.value = p }
+    })
+    form.coverImage = url
+    coverProgress.value = 100
+    ElMessage.success('封面上传成功')
+  } catch (e) {
+    coverProgress.value = 0
+    ElMessage.error('封面上传失败')
   }
 }
 
-const handleMediaUploadSuccess = (res: any, index: number) => {
-  form.medias[index].mediaUrl = res.data
-  mediaProgress.value = {
-    ...mediaProgress.value,
-    [index]: 100
-  }
-  ElMessage.success('素材上传成功')
-  // Clear progress after short delay
-  setTimeout(() => {
+const handleMediaUpload = async (options: any, index: number) => {
+  const { file } = options
+  mediaProgress.value = { ...mediaProgress.value, [index]: 1 }
+  try {
+    const url = await uploadLargeFile(file, {
+      onProgress: (p) => {
+        mediaProgress.value = { ...mediaProgress.value, [index]: p }
+      }
+    })
+    form.medias[index].mediaUrl = url
+    mediaProgress.value = { ...mediaProgress.value, [index]: 100 }
+    ElMessage.success('素材上传成功')
+    setTimeout(() => {
+      const nextProgress = { ...mediaProgress.value }
+      delete nextProgress[index]
+      mediaProgress.value = nextProgress
+    }, 1000)
+  } catch (e) {
     const nextProgress = { ...mediaProgress.value }
     delete nextProgress[index]
     mediaProgress.value = nextProgress
-  }, 1000)
-}
-
-const handleMediaError = (index: number) => {
-  const nextProgress = { ...mediaProgress.value }
-  delete nextProgress[index]
-  mediaProgress.value = nextProgress
-  ElMessage.error('素材上传失败')
+    ElMessage.error('素材上传失败')
+  }
 }
 
 // --- Tag Logic ---
