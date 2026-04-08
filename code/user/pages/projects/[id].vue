@@ -89,6 +89,13 @@
                   <component :is="tab.icon" :size="16" />
                   {{ tab.label }}
                 </button>
+                
+                <button v-if="project.downloadUrl"
+                        @click="handleDownload"
+                        class="px-8 py-4 rounded-3xl text-xs font-bold transition-all duration-500 whitespace-nowrap flex items-center gap-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white shadow-sm hover:shadow-emerald-200">
+                  <Download :size="16" />
+                  资源下载
+                </button>
               </div>
 
               <div class="p-8 md:p-12 min-h-[450px]">
@@ -487,6 +494,20 @@ const handleContact = () => {
     const el = document.getElementById('consult-section')
     if (el) el.scrollIntoView({ behavior: 'smooth' })
   }, 100)
+}
+
+const handleDownload = () => {
+  if (!project.value?.downloadUrl) return
+  
+  // Use a temporary link to trigger download
+  const link = document.createElement('a')
+  link.href = project.value.downloadUrl
+  link.setAttribute('download', '')
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  
+  ElMessage.success('正在启动安全下载通道...')
 }
 </script>
 

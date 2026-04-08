@@ -199,6 +199,7 @@ const { data: projRes, pending, refresh } = await useAsyncData('projects-page', 
       categoryId: activeCategory.value,
       techStack: techFilter.value,
       major: majorFilter.value,
+      status: 1,
       pageSize: 50
     } 
   })

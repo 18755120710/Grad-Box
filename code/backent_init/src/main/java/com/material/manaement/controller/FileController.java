@@ -5,20 +5,20 @@ import com.material.manaement.config.MinioConfig;
 import io.minio.BucketExistsArgs;
 import io.minio.ComposeObjectArgs;
 import io.minio.ComposeSource;
+import io.minio.ListObjectsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
+import io.minio.RemoveObjectsArgs;
 import io.minio.SetBucketPolicyArgs;
+import io.minio.messages.DeleteObject;
+import io.minio.messages.Item;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Slf4j
 @RestController
@@ -85,10 +87,82 @@ public class FileController {
         }
     }
 
+    @Operation(summary = "检查分片状态（断点续传）")
+    @GetMapping("/upload/check")
+    public com.material.manaement.common.Result<Map<String, Object>> checkChunkUpload(
+            @RequestParam("identifier") String identifier) {
+        try {
+            String prefix = "chunks/" + identifier + "/";
+            Iterable<io.minio.Result<Item>> results = minioClient.listObjects(
+                    ListObjectsArgs.builder()
+                            .bucket(minioConfig.getBucket())
+                            .prefix(prefix)
+                            .recursive(true)
+                            .build());
+
+            List<Integer> uploadedChunks = new ArrayList<>();
+            for (io.minio.Result<Item> result : results) {
+                Item item = result.get();
+                String objectName = item.objectName();
+                // objectName 格式为 chunks/{identifier}/{index}
+                String indexStr = objectName.substring(objectName.lastIndexOf("/") + 1);
+                try {
+                    uploadedChunks.add(Integer.parseInt(indexStr));
+                } catch (NumberFormatException ignored) {
+                }
+            }
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("uploadedChunks", uploadedChunks);
+            // uploadId 直接复用 identifier，简化逻辑
+            data.put("uploadId", identifier);
+            return com.material.manaement.common.Result.success(data);
+        } catch (Exception e) {
+            log.error("检查分片异常: ", e);
+            return com.material.manaement.common.Result.failed("分片检查失败");
+        }
+    }
+
+    @Operation(summary = "取消上传并清理分片")
+    @PostMapping("/upload/cleanup")
+    public com.material.manaement.common.Result<String> cleanupChunks(
+            @RequestParam("uploadId") String uploadId) {
+        try {
+            String prefix = "chunks/" + uploadId + "/";
+            Iterable<io.minio.Result<Item>> results = minioClient.listObjects(
+                    ListObjectsArgs.builder()
+                            .bucket(minioConfig.getBucket())
+                            .prefix(prefix)
+                            .recursive(true)
+                            .build());
+
+            List<DeleteObject> objects = new ArrayList<>();
+            for (io.minio.Result<Item> result : results) {
+                objects.add(new DeleteObject(result.get().objectName()));
+            }
+
+            if (!objects.isEmpty()) {
+                minioClient.removeObjects(
+                        RemoveObjectsArgs.builder()
+                                .bucket(minioConfig.getBucket())
+                                .objects(objects)
+                                .build());
+            }
+
+            return com.material.manaement.common.Result.success("中间分片已清理");
+        } catch (Exception e) {
+            log.error("清理分片异常: ", e);
+            return com.material.manaement.common.Result.failed("清理过程出现异常");
+        }
+    }
+
     @Operation(summary = "初始化分片上传")
     @PostMapping("/upload/init")
-    public Result<Map<String, Object>> initChunkUpload(@RequestParam("fileName") String fileName) {
-        String uploadId = UUID.randomUUID().toString();
+    public com.material.manaement.common.Result<Map<String, Object>> initChunkUpload(
+            @RequestParam("fileName") String fileName,
+            @RequestParam(value = "identifier", required = false) String identifier) {
+        // 如果提供了 identifier (MD5)，则优先使用它作为 uploadId 以便续传识别
+        String uploadId = (identifier != null && !identifier.isEmpty()) ? identifier : UUID.randomUUID().toString();
         String extension = "";
         if (fileName.contains(".")) {
             extension = fileName.substring(fileName.lastIndexOf("."));
@@ -96,7 +170,7 @@ public class FileController {
         Map<String, Object> data = new HashMap<>();
         data.put("uploadId", uploadId);
         data.put("extension", extension);
-        return Result.success(data);
+        return com.material.manaement.common.Result.success(data);
     }
 
     @Operation(summary = "上传分片")

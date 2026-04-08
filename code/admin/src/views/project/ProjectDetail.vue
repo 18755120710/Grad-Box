@@ -166,8 +166,12 @@
                         </el-upload>
                       </template>
                     </el-input>
-                    <div v-if="(mediaProgress[index] ?? 0) > 0 && (mediaProgress[index] ?? 0) < 100" class="progress-bar-nano">
-                      <div class="fill" :style="{ width: mediaProgress[index] + '%' }"></div>
+                    <div v-if="(mediaProgress[index] ?? 0) > 0 && (mediaProgress[index] ?? 0) < 100" class="asset-upload-overlay">
+                      <el-progress type="circle" :percentage="mediaProgress[index] ?? 0" :width="60" :stroke-width="3" color="#7c3aed" />
+                      <div class="mini-status-hint">{{ mediaStatus[index] === 'calculating' ? '校验...' : '传输...' }}</div>
+                      <el-button link class="mini-pause-btn" @click.stop="pauseMediaUpload(index)">
+                        <lucide-circle-stop :size="16" />
+                      </el-button>
                     </div>
                   </div>
                 </div>
@@ -235,10 +239,13 @@
                 </div>
                 <div class="canvas-cover-placeholder" v-else :class="{ 'loading': coverProgress > 0 && coverProgress < 100 }">
                   <div class="placeholder-content">
-                    <template v-if="coverProgress > 0 && coverProgress < 100">
-                      <div class="loading-ring"></div>
-                      <span class="p-text">{{ coverProgress }}%</span>
-                    </template>
+                    <div v-if="coverProgress > 0 && coverProgress < 100" class="upload-overlay">
+                      <el-progress type="circle" :percentage="coverProgress" :stroke-width="4" :width="80" color="#7c3aed" />
+                      <div class="upload-status-hint">{{ coverStatus === 'calculating' ? '计算校验和...' : '上传中...' }}</div>
+                      <el-button link class="pause-btn" @click.stop="pauseCoverUpload">
+                        <lucide-circle-stop :size="20" />
+                      </el-button>
+                    </div>
                     <template v-else>
                       <div class="placeholder-icon-box">
                         <lucide-plus :size="24" />
@@ -347,9 +354,14 @@
                     </el-button>
                   </div>
                 </div>
-                <el-button v-else link class="btn-attachment-placeholder" :loading="attachmentProgress > 0 && attachmentProgress < 100">
+                <el-button v-else link class="btn-attachment-placeholder" :loading="(attachmentProgress > 0 && attachmentProgress < 100) || attachmentStatus === 'calculating'">
                   <lucide-paperclip :size="14" />
-                  <span>{{ attachmentProgress > 0 ? `上传中 ${attachmentProgress}%` : '上传资源附件 (Zip/PDF...)' }}</span>
+                  <span>
+                    {{ attachmentStatus === 'calculating' ? '计算校验和...' : (attachmentProgress > 0 && attachmentProgress < 100 ? `上传中 ${attachmentProgress}%` : '上传资源附件 (Zip/PDF...)') }}
+                  </span>
+                  <el-button v-if="attachmentProgress > 0 && attachmentProgress < 100" link class="attachment-pause-btn" @click.stop="pauseAttachmentUpload">
+                    <lucide-circle-stop :size="14" />
+                  </el-button>
                 </el-button>
               </el-upload>
             </div>
@@ -396,13 +408,11 @@ import {
   LucideMonitorPlay,
   LucideEdit2,
   LucideArrowLeft,
-  LucideLayers,
-  LucideEye,
-  LucideFileText,
   LucideSparkles,
   LucideFileArchive,
   LucideFile,
-  LucidePaperclip
+  LucidePaperclip,
+  LucideCircleStop
 } from 'lucide-vue-next'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
@@ -447,30 +457,55 @@ const form = reactive({
   downloadUrl: ''
 })
 
-// --- Upload Progress State ---
+// --- Upload Progress & Status ---
 const coverProgress = ref(0)
+const coverStatus = ref<string>('')
+const coverController = ref<AbortController | null>(null)
+
 const attachmentProgress = ref(0)
+const attachmentStatus = ref<string>('')
+const attachmentController = ref<AbortController | null>(null)
+
 const mediaProgress = ref<Record<number, number>>({})
+const mediaStatus = ref<Record<number, string>>({})
+const mediaControllers = ref<Record<number, AbortController | null>>({})
+
 const isUploading = computed(() => {
-  if (coverProgress.value > 0 && coverProgress.value < 100) return true
-  if (attachmentProgress.value > 0 && attachmentProgress.value < 100) return true
-  return Object.values(mediaProgress.value).some(p => p > 0 && p < 100)
+  if (coverProgress.value > 0 && coverProgress.value < 100 && coverStatus.value === 'uploading') return true
+  if (attachmentProgress.value > 0 && attachmentProgress.value < 100 && attachmentStatus.value === 'uploading') return true
+  return Object.values(mediaProgress.value).some((p, i) => p > 0 && p < 100)
 })
 
 // --- Attachment Handlers ---
 const handleAttachmentUpload = async (options: any) => {
   const { file } = options
-  attachmentProgress.value = 1
+  if (attachmentController.value) attachmentController.value.abort()
+  attachmentController.value = new AbortController()
+  
   try {
     const url = await uploadLargeFile(file, {
-      onProgress: (p) => { attachmentProgress.value = p }
+      onProgress: (p) => { attachmentProgress.value = p },
+      onStatusChange: (s) => { attachmentStatus.value = s },
+      signal: attachmentController.value.signal
     })
     form.downloadUrl = url
     attachmentProgress.value = 100
     ElMessage.success('附件上传成功')
-  } catch (e) {
-    attachmentProgress.value = 0
-    ElMessage.error('附件上传失败')
+  } catch (e: any) {
+    if (e.message === 'Upload paused') {
+      ElMessage.info('上传已暂停')
+    } else {
+      attachmentProgress.value = 0
+      ElMessage.error('附件上传失败')
+    }
+  } finally {
+    attachmentController.value = null
+  }
+}
+
+const pauseAttachmentUpload = () => {
+  if (attachmentController.value) {
+    attachmentController.value.abort()
   }
 }
 
@@ -604,42 +639,72 @@ const handleDeleteCover = async () => {
 
 const handleCoverUpload = async (options: any) => {
   const { file } = options
-  coverProgress.value = 1
+  if (coverController.value) coverController.value.abort()
+  coverController.value = new AbortController()
+
   try {
     const url = await uploadLargeFile(file, {
-      onProgress: (p) => { coverProgress.value = p }
+      onProgress: (p) => { coverProgress.value = p },
+      onStatusChange: (s) => { coverStatus.value = s },
+      signal: coverController.value.signal
     })
     form.coverImage = url
     coverProgress.value = 100
     ElMessage.success('封面上传成功')
-  } catch (e) {
-    coverProgress.value = 0
-    ElMessage.error('封面上传失败')
+  } catch (e: any) {
+    if (e.message === 'Upload paused') {
+      ElMessage.info('封面上传已暂停')
+    } else {
+      coverProgress.value = 0
+      ElMessage.error('封面上传失败')
+    }
+  } finally {
+    coverController.value = null
+  }
+}
+
+const pauseCoverUpload = () => {
+  if (coverController.value) {
+    coverController.value.abort()
   }
 }
 
 const handleMediaUpload = async (options: any, index: number) => {
   const { file } = options
-  mediaProgress.value = { ...mediaProgress.value, [index]: 1 }
+  if (mediaControllers.value[index]) mediaControllers.value[index]?.abort()
+  const controller = new AbortController()
+  mediaControllers.value[index] = controller
+  
   try {
     const url = await uploadLargeFile(file, {
       onProgress: (p) => {
         mediaProgress.value = { ...mediaProgress.value, [index]: p }
-      }
+      },
+      onStatusChange: (s) => {
+        mediaStatus.value = { ...mediaStatus.value, [index]: s }
+      },
+      signal: controller.signal
     })
     form.medias[index].mediaUrl = url
     mediaProgress.value = { ...mediaProgress.value, [index]: 100 }
     ElMessage.success('素材上传成功')
-    setTimeout(() => {
+  } catch (e: any) {
+    if (e.message === 'Upload paused') {
+      ElMessage.info('上传暂停')
+    } else {
       const nextProgress = { ...mediaProgress.value }
       delete nextProgress[index]
       mediaProgress.value = nextProgress
-    }, 1000)
-  } catch (e) {
-    const nextProgress = { ...mediaProgress.value }
-    delete nextProgress[index]
-    mediaProgress.value = nextProgress
-    ElMessage.error('素材上传失败')
+      ElMessage.error('素材上传失败')
+    }
+  } finally {
+    mediaControllers.value[index] = null
+  }
+}
+
+const pauseMediaUpload = (index: number) => {
+  if (mediaControllers.value[index]) {
+    mediaControllers.value[index]?.abort()
   }
 }
 
@@ -1130,6 +1195,48 @@ onMounted(() => {
   background: var(--admin-surface-light);
   border: 1px solid var(--admin-border);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- Upload Overlay & Pause Stats --- */
+.upload-overlay, .asset-upload-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  gap: 12px;
+}
+
+.upload-status-hint {
+  font-size: 12px;
+  color: var(--admin-text-secondary);
+  font-weight: 600;
+}
+
+.pause-btn, .mini-pause-btn {
+  color: #ef4444 !important;
+  opacity: 0.8;
+  transition: all 0.2s;
+}
+
+.pause-btn:hover, .mini-pause-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.mini-status-hint {
+  font-size: 10px;
+  color: var(--admin-text-muted);
+}
+
+.attachment-pause-btn {
+  margin-left: 8px;
+  padding: 0;
+  color: #ef4444 !important;
 }
 
 .asset-strip-item:hover {

@@ -20,9 +20,10 @@ public class ProjectController {
             @RequestParam(required = false) String sort,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) String techStack,
-            @RequestParam(required = false) String major) {
+            @RequestParam(required = false) String major,
+            @RequestParam(required = false) Integer status) {
         Page<Project> page = new Page<>(pageNum, pageSize);
-        return Result.success(projectService.page(page, keyword, sort, categoryId, techStack, major));
+        return Result.success(projectService.page(page, keyword, sort, categoryId, techStack, major, status));
     }
 
     @GetMapping("/{id}")

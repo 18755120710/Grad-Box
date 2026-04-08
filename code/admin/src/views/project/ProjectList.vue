@@ -284,7 +284,7 @@ const handleDelete = (row: any) => {
 
 const handleStatusChange = async (row: any) => {
   try {
-    await request.put('/api/projects', row)
+    await request.put(`/api/projects/${row.id}`, row)
     ElMessage({
       message: `项目已${row.status === 1 ? '上线发布' : '临时下架'}`,
       type: row.status === 1 ? 'success' : 'warning'

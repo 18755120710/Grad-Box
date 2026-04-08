@@ -41,6 +41,7 @@ public class Project implements Serializable {
     private Integer isNew;
     private String tags;
     private String major;
+    private String downloadUrl;
     private Integer sortOrder;
     @TableField(exist = false)
     private java.util.List<ProjectMedia> medias;

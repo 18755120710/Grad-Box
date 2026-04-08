@@ -1,88 +1,140 @@
 import request from './request'
+import SparkMD5 from 'spark-md5'
 
 interface UploadOptions {
     chunkSize?: number
     concurrency?: number
     onProgress?: (percent: number) => void
+    onStatusChange?: (status: 'calculating' | 'uploading' | 'paused' | 'completed' | 'error') => void
+    signal?: AbortSignal // 用于中止请求
 }
 
 /**
- * 大文件分片上传工具
- * @param file 文件对象
- * @param options 配置项
+ * 计算文件 MD5 (分块计算，避免卡顿)
+ */
+export const calculateMd5 = (file: File, chunkSize: number): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const spark = new SparkMD5.ArrayBuffer()
+        const reader = new FileReader()
+        const totalChunks = Math.ceil(file.size / chunkSize)
+        let currentChunk = 0
+
+        reader.onload = (e) => {
+            spark.append(e.target?.result as ArrayBuffer)
+            currentChunk++
+            if (currentChunk < totalChunks) {
+                loadNext()
+            } else {
+                resolve(spark.end())
+            }
+        }
+
+        reader.onerror = reject
+
+        const loadNext = () => {
+            const start = currentChunk * chunkSize
+            const end = Math.min(start + chunkSize, file.size)
+            reader.readAsArrayBuffer(file.slice(start, end))
+        }
+
+        loadNext()
+    })
+}
+
+/**
+ * 大文件分片上传工具 (支持断点续传与暂停)
  */
 export const uploadLargeFile = async (file: File, options: UploadOptions = {}) => {
     const {
-        chunkSize = 5 * 1024 * 1024, // 默认 5MB
-        concurrency = 3,           // 默认并发数为 3
-        onProgress
+        chunkSize = 5 * 1024 * 1024,
+        concurrency = 3,
+        onProgress,
+        onStatusChange,
+        signal
     } = options
 
-    // 1. 初始化上传任务，获取 uploadId
-    const initRes: any = await request.post('/api/file/upload/init', null, {
-        params: { fileName: file.name }
-    })
+    try {
+        // 1. 计算文件 MD5
+        if (onStatusChange) onStatusChange('calculating')
+        const identifier = await calculateMd5(file, chunkSize)
 
-    if (initRes.code !== 200 && !initRes.data) {
-        throw new Error('Failed to initialize upload')
-    }
+        // 2. 检查已上传的分片 (断点续传预检)
+        const checkRes: any = await request.get('/api/file/upload/check', {
+            params: { identifier },
+            signal
+        })
 
-    const { uploadId } = initRes.data
-    const totalChunks = Math.ceil(file.size / chunkSize)
-    let uploadedCount = 0
+        const { uploadedChunks, uploadId } = checkRes.data
+        const totalChunks = Math.ceil(file.size / chunkSize)
 
-    // 2. 定义分片上传逻辑
-    const uploadChunk = async (index: number) => {
-        const start = index * chunkSize
-        const end = Math.min(start + chunkSize, file.size)
-        const chunkBlob = file.slice(start, end)
+        // 如果已经全部上传，则直接完成合并
+        if (uploadedChunks.length === totalChunks) {
+            if (onStatusChange) onStatusChange('completed')
+            const completeRes: any = await request.post('/api/file/upload/complete', null, {
+                params: { uploadId, fileName: file.name, totalChunks }
+            })
+            return completeRes.data
+        }
 
-        const formData = new FormData()
-        formData.append('uploadId', uploadId)
-        formData.append('index', index.toString())
-        formData.append('file', chunkBlob)
+        // 3. 准备待上传的任务队列
+        if (onStatusChange) onStatusChange('uploading')
+        let uploadedCount = uploadedChunks.length
+        const queue = []
+        for (let i = 0; i < totalChunks; i++) {
+            if (!uploadedChunks.includes(i)) {
+                queue.push(i)
+            }
+        }
 
-        try {
-            await request.post('/api/file/upload/chunk', formData)
+        const uploadChunk = async (index: number) => {
+            const start = index * chunkSize
+            const end = Math.min(start + chunkSize, file.size)
+            const chunkBlob = file.slice(start, end)
+
+            const formData = new FormData()
+            formData.append('uploadId', uploadId)
+            formData.append('index', index.toString())
+            formData.append('file', chunkBlob)
+
+            await request.post('/api/file/upload/chunk', formData, { signal })
+
             uploadedCount++
             if (onProgress) {
                 onProgress(Math.round((uploadedCount / totalChunks) * 100))
             }
-        } catch (error) {
-            console.error(`Chunk ${index} upload failed:`, error)
-            throw error // 抛出异常由上层处理（暂不实现复杂的自动重试）
         }
-    }
 
-    // 3. 并发执行上传
-    const queue = Array.from({ length: totalChunks }, (_, i) => i)
-    const workers = []
-
-    for (let i = 0; i < Math.min(concurrency, totalChunks); i++) {
-        workers.push((async () => {
-            while (queue.length > 0) {
-                const index = queue.shift()
-                if (index !== undefined) {
-                    await uploadChunk(index)
+        // 并发控制器
+        const workers = []
+        const runningQueue = [...queue]
+        for (let i = 0; i < Math.min(concurrency, runningQueue.length); i++) {
+            workers.push((async () => {
+                while (runningQueue.length > 0) {
+                    if (signal?.aborted) throw new Error('AbortError')
+                    const index = runningQueue.shift()
+                    if (index !== undefined) {
+                        await uploadChunk(index)
+                    }
                 }
-            }
-        })())
-    }
-
-    await Promise.all(workers)
-
-    // 4. 完成合并请求
-    const completeRes: any = await request.post('/api/file/upload/complete', null, {
-        params: {
-            uploadId,
-            fileName: file.name,
-            totalChunks
+            })())
         }
-    })
 
-    if (completeRes.code !== 200 && !completeRes.data) {
-        throw new Error('Failed to complete upload')
+        await Promise.all(workers)
+
+        // 4. 合并请求
+        const completeRes: any = await request.post('/api/file/upload/complete', null, {
+            params: { uploadId, fileName: file.name, totalChunks },
+            signal
+        })
+
+        if (onStatusChange) onStatusChange('completed')
+        return completeRes.data
+    } catch (error: any) {
+        if (error.name === 'CanceledError' || error.message === 'AbortError') {
+            if (onStatusChange) onStatusChange('paused')
+            throw new Error('Upload paused')
+        }
+        if (onStatusChange) onStatusChange('error')
+        throw error
     }
-
-    return completeRes.data // 返回最终的文件 URL
 }

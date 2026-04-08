@@ -26,4 +26,7 @@ export default defineNuxtConfig({
     },
     pageTransition: { name: 'page', mode: 'out-in' }
   },
+  devServer: {
+    open: true
+  }
 })

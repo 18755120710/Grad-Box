@@ -7,5 +7,5 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 
 public interface ProjectService extends IService<Project> {
     IPage<Project> page(Page<Project> page, String keyword, String sort, Long categoryId, String techStack,
-            String major);
+            String major, Integer status);
 }

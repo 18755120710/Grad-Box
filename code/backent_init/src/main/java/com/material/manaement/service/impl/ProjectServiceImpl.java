@@ -29,7 +29,7 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
 
     @Override
     public IPage<Project> page(Page<Project> page, String keyword, String sort, Long categoryId, String techStack,
-            String major) {
+            String major, Integer status) {
         LambdaQueryWrapper<Project> wrapper = new LambdaQueryWrapper<>();
 
         // Keyword Search (Broad)
@@ -54,6 +54,11 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
         // Category Filter
         if (categoryId != null) {
             wrapper.eq(Project::getCategoryId, categoryId);
+        }
+
+        // Status Filter
+        if (status != null) {
+            wrapper.eq(Project::getStatus, status);
         }
 
         // Sorting Logic
