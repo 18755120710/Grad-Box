@@ -145,21 +145,76 @@
                   </div>
                 </div>
 
-                <div v-if="activeTab === 'ask'" class="space-y-8 animate-fade-in">
+                <div v-if="activeTab === 'ask'" class="space-y-10 animate-fade-in relative">
                   <div class="space-y-3">
-                    <h3 class="text-2xl font-display text-profound-black uppercase">业务咨询</h3>
-                    <p class="text-sm text-slate-500 font-medium">留下您的问题，我们的专家团队将为您解惑。</p>
+                    <h3 class="text-2xl font-display text-profound-black uppercase">在线咨询</h3>
+                    <p class="text-sm text-slate-500 font-medium">查看已有咨询或留下您的问题，我们的专家团队将为您解惑。</p>
                   </div>
-                  <form @submit.prevent="submitConsultation" class="grid grid-cols-1 gap-5">
-                    <textarea v-model="consultForm.content" required placeholder="请详细描述您的问题..."
-                              class="w-full h-32 p-6 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all text-slate-800 text-sm"></textarea>
-                    <input v-model="consultForm.contactWay" type="text" required placeholder="联系方式 (微信/QQ/邮箱)"
-                           class="w-full p-6 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all text-slate-800 text-sm" />
-                    <button type="submit" :disabled="submittingConsult"
-                            class="px-10 py-5 bg-profound-black text-white rounded-3xl font-bold text-sm hover:bg-primary transition-all flex items-center justify-center gap-2 disabled:opacity-50 group">
-                      <MessageCircleQuestion :size="18" class="group-hover:rotate-12 transition-transform" /> {{ submittingConsult ? '正在发送...' : '确认提交' }}
-                    </button>
-                  </form>
+
+                  <!-- Consultation List (Comment Section Style) -->
+                  <div class="space-y-6">
+                    <div v-if="consultations.length > 0" class="space-y-6 max-h-[500px] overflow-y-auto pr-2 no-scrollbar">
+                      <div v-for="item in consultations" :key="item.id" 
+                           class="p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4 hover:shadow-lg transition-all duration-300">
+                        <div class="flex justify-between items-start">
+                          <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                              U
+                            </div>
+                            <div class="space-y-0.5">
+                              <p class="text-xs font-bold text-profound-black">项目咨询者</p>
+                              <p class="text-[10px] text-slate-400 font-medium">{{ formatDate(item.createTime) }}</p>
+                            </div>
+                          </div>
+                          <span v-if="item.status === 1" class="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-full">已回复</span>
+                          <span v-else class="px-3 py-1 bg-amber-50 text-amber-600 text-[10px] font-bold rounded-full">待处理</span>
+                        </div>
+                        <p class="text-sm text-slate-600 leading-relaxed font-medium">
+                          {{ item.content }}
+                        </p>
+                        
+                        <!-- Admin Reply -->
+                        <div v-if="item.reply" class="mt-4 p-5 bg-white rounded-2xl border border-slate-200/50 space-y-2 relative overflow-hidden group">
+                          <div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+                          <div class="flex items-center gap-2 text-primary">
+                            <ShieldCheck :size="14" />
+                            <span class="text-[10px] font-bold uppercase tracking-wider">站长回复</span>
+                          </div>
+                          <p class="text-xs text-slate-500 font-medium leading-relaxed italic">
+                            {{ item.reply }}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div v-else-if="!loadingConsultations" class="py-12 text-center border-2 border-dashed border-slate-100 rounded-4xl space-y-4">
+                       <MessageSquareOff :size="32" class="text-slate-100 mx-auto" />
+                       <p class="text-[10px] uppercase tracking-profound text-slate-400 font-bold">暂无咨询记录</p>
+                    </div>
+                    <div v-else class="py-12 flex justify-center">
+                       <div class="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                    </div>
+                  </div>
+
+                  <div class="h-px bg-slate-100 my-8"></div>
+
+                  <!-- Submission Form -->
+                  <div class="space-y-6 bg-white p-2 rounded-4xl border border-slate-50 shadow-sm">
+                    <h4 class="px-6 pt-4 text-sm font-bold text-profound-black flex items-center gap-2">
+                       <MessageCirclePlus :size="16" class="text-primary" /> 我要咨询
+                    </h4>
+                    <form @submit.prevent="submitConsultation" class="grid grid-cols-1 gap-4 p-6 pt-2">
+                      <textarea v-model="consultForm.content" required placeholder="请详细描述您的问题..."
+                                class="w-full h-32 p-6 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all text-slate-800 text-sm font-medium"></textarea>
+                      <div class="flex flex-col md:flex-row gap-4">
+                        <input v-model="consultForm.contactWay" type="text" required placeholder="联系方式 (微信/QQ/邮箱)"
+                               class="flex-1 p-6 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all text-slate-800 text-sm font-medium" />
+                        <button type="submit" :disabled="submittingConsult"
+                                class="px-10 py-5 bg-profound-black text-white rounded-3xl font-bold text-sm hover:bg-primary transition-all flex items-center justify-center gap-2 disabled:opacity-50 group min-w-[180px]">
+                          <MessageCircleQuestion :size="18" class="group-hover:rotate-12 transition-transform" /> {{ submittingConsult ? '正在发送...' : '提交问题' }}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
                 </div>
               </div>
             </div>
@@ -255,7 +310,8 @@
 import { 
   Eye, Download, Star, Telescope, Puzzle, Cpu, MessageCircleQuestion, 
   CheckCircle, Smartphone, Check, Zap, UserCheck, X, ShieldCheck, Lock, CheckCircle2, ArrowRight,
-  MonitorDot, Code2, BookOpen, Video, Image, MessageCircle, VideoOff, Database, PlayCircle, Maximize2
+  MonitorDot, Code2, BookOpen, Video, Image, MessageCircle, VideoOff, Database, PlayCircle, Maximize2,
+  MessageSquareOff, MessageCirclePlus
 } from 'lucide-vue-next'
 import { MdPreview } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
@@ -343,9 +399,43 @@ const consultForm = reactive({
 })
 const submittingConsult = ref(false)
 
+const consultations = ref([])
+const loadingConsultations = ref(false)
+
+const fetchConsultations = async () => {
+  if (!project.value?.id) return
+  loadingConsultations.value = true
+  try {
+    const res = await api('/api/consultations', {
+      params: { projectId: project.value.id, pageSize: 50 }
+    })
+    consultations.value = res.data?.records || []
+  } catch (e) {
+    console.error('Failed to fetch consultations:', e)
+  } finally {
+    loadingConsultations.value = false
+  }
+}
+
+watch(activeTab, (newTab) => {
+  if (newTab === 'ask') {
+    fetchConsultations()
+  }
+})
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+}
+
 const submitConsultation = async () => {
   if (!authStore.isLoggedIn) {
-    alert('请先登录后提交咨询')
+    ElMessage.warning('请先登录后提交咨询')
+    return
+  }
+  if (!consultForm.content.trim()) {
+    ElMessage.warning('请输入咨询内容')
     return
   }
   submittingConsult.value = true
@@ -358,12 +448,12 @@ const submitConsultation = async () => {
         contactWay: consultForm.contactWay
       }
     })
-    alert('咨询已收到，我们将尽快联系您！')
+    ElMessage.success('咨询已收到，我们将尽快联系您！')
     consultForm.content = ''
     consultForm.contactWay = ''
-    activeTab.value = 'overview'
+    fetchConsultations() // Refresh the list
   } catch (e) {
-    alert('提交失败，请稍后重试')
+    ElMessage.error('提交失败，请稍后重试')
   } finally {
     submittingConsult.value = false
   }
@@ -391,7 +481,12 @@ const inclusions = [
 ]
 
 const handleContact = () => {
-  alert('获取毕设项目内容及源码，请添加站长微信：GradBox_Help\n私信项目ID：' + project.value.id)
+  activeTab.value = 'ask'
+  // Auto scroll to inquiry form or list
+  setTimeout(() => {
+    const el = document.getElementById('consult-section')
+    if (el) el.scrollIntoView({ behavior: 'smooth' })
+  }, 100)
 }
 </script>
 
