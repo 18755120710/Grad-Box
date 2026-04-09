@@ -510,7 +510,13 @@ const handleDownload = () => {
   const fileName = project.value.downloadUrl.substring(project.value.downloadUrl.lastIndexOf('/') + 1)
   performTurboDownload(project.value.downloadUrl, fileName)
   
-  ElMessage.success('正在建立极速下载连接...')
+  ElNotification({
+    title: '开始极速下载',
+    message: '下载任务已由全局系统接管。您可以离开当前页面，下载将在后台继续进行。',
+    type: 'success',
+    duration: 5000,
+    offset: 80
+  })
 }
 </script>
 
