@@ -92,9 +92,16 @@
                 
                 <button v-if="project.downloadUrl"
                         @click="handleDownload"
-                        class="px-8 py-4 rounded-3xl text-xs font-bold transition-all duration-500 whitespace-nowrap flex items-center gap-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white shadow-sm hover:shadow-emerald-200">
-                  <Download :size="16" />
-                  资源下载
+                        :disabled="downloadStates[project.downloadUrl]?.status === 'downloading'"
+                        class="px-8 py-4 rounded-3xl text-xs font-bold transition-all duration-500 whitespace-nowrap flex items-center gap-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white shadow-sm hover:shadow-emerald-200 relative overflow-hidden group">
+                  <div v-if="downloadStates[project.downloadUrl]?.status === 'downloading'" 
+                       class="absolute inset-0 bg-emerald-600/10" 
+                       :style="{ width: downloadStates[project.downloadUrl].progress + '%' }"></div>
+                  <Download :size="16" class="relative z-10" />
+                  <span class="relative z-10">{{ 
+                    downloadStates[project.downloadUrl]?.status === 'downloading' ? `已下载 ${downloadStates[project.downloadUrl].progress}%` :
+                    (downloadStates[project.downloadUrl]?.status === 'merging' ? '正在合并...' : '资源下载')
+                  }}</span>
                 </button>
               </div>
 
@@ -327,6 +334,7 @@ const route = useRoute()
 const api = useApi()
 const authStore = useAuthStore()
 const activeTab = ref('overview')
+const { downloadStates, performTurboDownload } = useDownload()
 
 const { data: res } = await useAsyncData(`project-${route.params.id}`, () => api(`/api/projects/${route.params.id}`))
 const project = computed(() => res.value?.data)
@@ -499,15 +507,10 @@ const handleContact = () => {
 const handleDownload = () => {
   if (!project.value?.downloadUrl) return
   
-  // Use a temporary link to trigger download
-  const link = document.createElement('a')
-  link.href = project.value.downloadUrl
-  link.setAttribute('download', '')
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
+  const fileName = project.value.downloadUrl.substring(project.value.downloadUrl.lastIndexOf('/') + 1)
+  performTurboDownload(project.value.downloadUrl, fileName)
   
-  ElMessage.success('正在启动安全下载通道...')
+  ElMessage.success('正在建立极速下载连接...')
 }
 </script>
 
