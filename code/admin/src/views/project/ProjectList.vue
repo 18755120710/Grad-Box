@@ -181,6 +181,23 @@
             </div>
           </div>
 
+          <div class="support-block ranking-block">
+            <h4 class="support-title">热度排行</h4>
+            <div class="ranking-list-v2">
+              <div v-for="(rp, index) in rankingProjects" :key="rp.id" class="ranking-item-v2"
+                @click="$router.push(`/projects/${rp.id}`)">
+                <div class="rank-indicator" :class="`top-${index + 1}`">{{ index + 1 }}</div>
+                <div class="rank-info">
+                  <span class="rank-title">{{ rp.title }}</span>
+                  <div class="rank-meta">
+                    <lucide-eye :size="10" />
+                    <span>{{ rp.viewCount || 0 }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </aside>
     </div>
@@ -209,7 +226,9 @@ import {
   ShoppingCart as LucideShoppingCart,
   Eye as LucideEye,
   Bookmark as LucideBookmark,
-  Clock as LucideClock
+  Clock as LucideClock,
+  Trophy as LucideTrophy,
+  TrendingUp as LucideTrendingUp
 } from 'lucide-vue-next'
 
 // --- State ---
@@ -226,6 +245,12 @@ const onlineRate = computed(() => {
   if (projects.value.length === 0) return 0
   const online = projects.value.filter(p => p.status === 1).length
   return Math.round((online / projects.value.length) * 100)
+})
+
+const rankingProjects = computed(() => {
+  return [...projects.value]
+    .sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
+    .slice(0, 5)
 })
 
 const page = reactive({
@@ -813,6 +838,91 @@ onMounted(() => {
 }
 
 /* Removed stagger animations as per user request */
+
+/* Ranking List */
+.ranking-list-v2 {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ranking-item-v2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: var(--admin-surface-light);
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ranking-item-v2:hover {
+  background: var(--admin-surface);
+  transform: translateX(4px);
+  border-color: var(--admin-primary);
+}
+
+.rank-indicator {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-weight: 800;
+  background: var(--admin-bg);
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text-muted);
+}
+
+.rank-indicator.top-1 {
+  background: #facc15;
+  border-color: #facc15;
+  color: #000;
+}
+
+.rank-indicator.top-2 {
+  background: #94a3b8;
+  border-color: #94a3b8;
+  color: #000;
+}
+
+.rank-indicator.top-3 {
+  background: #b45309;
+  border-color: #b45309;
+  color: #fff;
+}
+
+.rank-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.rank-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--admin-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rank-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-data);
+  font-size: 10px;
+  color: var(--admin-text-muted);
+  opacity: 0.7;
+}
 
 @media (max-width: 1200px) {
   .seamless-canvas {
