@@ -48,30 +48,46 @@
                 <!-- Primary Info -->
                 <div class="asset-row-info" @click="$router.push(`/projects/${row.id}`)">
                   <div class="info-headline">
+                    <span class="asset-id">#{{ row.id }}</span>
                     <span class="asset-name">{{ row.title }}</span>
                     <el-tag size="small" effect="plain" class="flat-tag-mini">{{ row.categoryName }}</el-tag>
+                    <el-tag size="small" v-if="row.major" effect="plain" class="flat-tag-mini major">{{ row.major
+                      }}</el-tag>
                   </div>
                   <div class="info-sub">
                     <span class="tech-stack-text">{{ row.techStack }}</span>
                   </div>
                 </div>
 
+                <!-- Metrics Block -->
+                <div class="asset-row-metrics">
+                  <div class="metric-item" title="累积销量">
+                    <lucide-shopping-cart :size="12" />
+                    <span>{{ row.saleCount || 0 }}</span>
+                  </div>
+                  <div class="metric-item" title="浏览次数">
+                    <lucide-eye :size="12" />
+                    <span>{{ row.viewCount || 0 }}</span>
+                  </div>
+                  <div class="metric-item" title="收藏人数">
+                    <lucide-bookmark :size="12" />
+                    <span>{{ row.favCount || 0 }}</span>
+                  </div>
+                </div>
+
                 <!-- Logistics / Meta -->
                 <div class="asset-row-meta">
-                  <div class="meta-block">
+                  <div class="meta-block price-cell">
                     <span class="meta-label">定价</span>
                     <span class="meta-value price-font">¥{{ row.price }}</span>
                   </div>
                   <div class="meta-block">
                     <span class="meta-label">状态</span>
-                    <el-switch
-                      v-model="row.status"
-                      :active-value="1"
-                      :inactive-value="0"
-                      size="small"
-                      @change="handleStatusChange(row)"
-                      class="mini-switch"
-                    />
+                    <div class="status-wrap">
+                      <el-switch v-model="row.status" :active-value="1" :inactive-value="0" size="small"
+                        @change="handleStatusChange(row)" class="mini-switch" />
+                      <span class="time-stamp">{{ formatDate(row.createTime) }}</span>
+                    </div>
                   </div>
                 </div>
 
@@ -103,14 +119,8 @@
           </div>
 
           <div class="pagination-flow">
-            <el-pagination
-              v-model:current-page="page.pageNum"
-              v-model:page-size="page.pageSize"
-              :total="total"
-              layout="prev, pager, next"
-              @current-change="loadData"
-              class="seamless-pagination"
-            />
+            <el-pagination v-model:current-page="page.pageNum" v-model:page-size="page.pageSize" :total="total"
+              layout="prev, pager, next" @current-change="loadData" class="seamless-pagination" />
           </div>
         </section>
       </div>
@@ -118,33 +128,30 @@
       <!-- Support Stream (Filters) -->
       <aside class="canvas-support-stream">
         <div class="sticky-support-panel">
-          
+
           <div class="support-block filter-main">
             <h4 class="support-title">按索引筛选</h4>
             <div class="filter-group-v2">
               <div class="filter-item-v2">
                 <label>关键词</label>
-                <el-input 
-                  v-model="filterForm.title" 
-                  placeholder="项目名称 / 简介" 
-                  clearable 
-                  @input="handleSearch"
-                  class="input-seamless-v2"
-                >
+                <el-input v-model="filterForm.title" placeholder="项目名称 / 简介" clearable @input="handleSearch"
+                  class="input-seamless-v2">
                   <template #prefix><lucide-search :size="12" /></template>
                 </el-input>
               </div>
 
               <div class="filter-item-v2">
                 <label>所属分类</label>
-                <el-select v-model="filterForm.categoryId" placeholder="全部范畴" clearable @change="handleSearch" class="seamless-select">
+                <el-select v-model="filterForm.categoryId" placeholder="全部范畴" clearable @change="handleSearch"
+                  class="seamless-select">
                   <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
                 </el-select>
               </div>
 
               <div class="filter-item-v2">
                 <label>发布状态</label>
-                <el-select v-model="filterForm.status" placeholder="所有状态" clearable @change="handleSearch" class="seamless-select">
+                <el-select v-model="filterForm.status" placeholder="所有状态" clearable @change="handleSearch"
+                  class="seamless-select">
                   <el-option label="公开发布" :value="1" />
                   <el-option label="仓库封存" :value="0" />
                 </el-select>
@@ -181,7 +188,7 @@
 import { ref, onMounted, reactive, computed } from 'vue'
 import request from '@/utils/request'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { 
+import {
   Plus as LucidePlus,
   Layers as LucideLayers,
   ZoomIn as LucideZoomIn,
@@ -195,7 +202,11 @@ import {
   Filter as LucideFilter,
   RotateCcw as LucideRotateCcw,
   ArrowUpRight as LucideArrowUpRight,
-  Inbox as LucideInbox
+  Inbox as LucideInbox,
+  ShoppingCart as LucideShoppingCart,
+  Eye as LucideEye,
+  Bookmark as LucideBookmark,
+  Clock as LucideClock
 } from 'lucide-vue-next'
 
 // --- State ---
@@ -230,8 +241,8 @@ const filterForm = reactive({
 const loadData = async () => {
   loading.value = true
   try {
-    const res: any = await request.get('/api/projects', { 
-      params: { ...page, ...filterForm } 
+    const res: any = await request.get('/api/projects', {
+      params: { ...page, ...filterForm }
     })
     projects.value = res.data.records
     total.value = res.data.total
@@ -301,6 +312,12 @@ const handleCopy = (row: any) => {
 }
 
 
+
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return '-'
+  const date = new Date(dateStr)
+  return `${date.getMonth() + 1}/${date.getDate()}`
+}
 
 onMounted(() => {
   loadData()
@@ -425,7 +442,7 @@ onMounted(() => {
 
 .asset-row-item {
   display: grid;
-  grid-template-columns: 80px 1fr 180px 140px;
+  grid-template-columns: 80px 1fr 180px 220px 100px;
   align-items: center;
   gap: 24px;
   padding: 12px 16px;
@@ -480,13 +497,29 @@ onMounted(() => {
   backdrop-filter: blur(2px);
 }
 
-.asset-row-preview:hover .row-thumb { transform: none; }
+.asset-row-preview:hover .row-thumb {
+  transform: none;
+}
+
+.asset-id {
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--admin-primary);
+  opacity: 0.5;
+  margin-right: 8px;
+}
 
 .asset-name {
   font-weight: 700;
   font-size: 15px;
   color: var(--admin-text-main);
-  margin-right: 12px;
+  margin-right: 8px;
+}
+
+.flat-tag-mini.major {
+  border-color: rgba(var(--admin-primary-rgb), 0.3) !important;
+  color: var(--admin-primary) !important;
 }
 
 .flat-tag-mini {
@@ -509,9 +542,31 @@ onMounted(() => {
   opacity: 0.8;
 }
 
+.asset-row-metrics {
+  display: flex;
+  gap: 20px;
+}
+
+.metric-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--admin-text-muted);
+  min-width: 40px;
+}
+
+.metric-item span {
+  font-family: var(--font-data);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--admin-text-secondary);
+}
+
 .asset-row-meta {
   display: flex;
-  gap: 32px;
+  gap: 24px;
+  justify-content: flex-end;
 }
 
 .meta-block {
@@ -539,6 +594,23 @@ onMounted(() => {
   color: #facc15;
 }
 
+.price-cell {
+  min-width: 80px;
+}
+
+.status-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.time-stamp {
+  font-family: var(--font-data);
+  font-size: 10px;
+  color: var(--admin-text-muted);
+  opacity: 0.6;
+}
+
 /* Actions (Hover) */
 .asset-row-actions {
   display: flex;
@@ -556,8 +628,17 @@ onMounted(() => {
   transform: translateY(-2px);
 }
 
-.action-btn-lite.edit:hover { background: var(--admin-primary-glow) !important; color: var(--admin-primary) !important; border-color: var(--admin-primary) !important; }
-.action-btn-lite.delete:hover { background: rgba(239, 68, 68, 0.1) !important; color: #ef4444 !important; border-color: #ef4444 !important; }
+.action-btn-lite.edit:hover {
+  background: var(--admin-primary-glow) !important;
+  color: var(--admin-primary) !important;
+  border-color: var(--admin-primary) !important;
+}
+
+.action-btn-lite.delete:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+  border-color: #ef4444 !important;
+}
 
 /* --- Sidebar Support Stream --- */
 .canvas-support-stream {
@@ -690,8 +771,16 @@ onMounted(() => {
   gap: 4px;
 }
 
-.primary-msg { font-size: 16px; font-weight: 700; color: var(--admin-text-secondary); }
-.secondary-msg { font-size: 12px; color: var(--admin-text-muted); }
+.primary-msg {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--admin-text-secondary);
+}
+
+.secondary-msg {
+  font-size: 12px;
+  color: var(--admin-text-muted);
+}
 
 .pagination-flow {
   margin-top: 48px;
@@ -713,8 +802,17 @@ onMounted(() => {
 /* Removed stagger animations as per user request */
 
 @media (max-width: 1200px) {
-  .seamless-canvas { grid-template-columns: 1fr; gap: 40px; }
-  .canvas-support-stream { order: -1; }
-  .section-indicator { display: none; }
+  .seamless-canvas {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .canvas-support-stream {
+    order: -1;
+  }
+
+  .section-indicator {
+    display: none;
+  }
 }
 </style>
