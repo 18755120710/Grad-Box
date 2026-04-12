@@ -52,7 +52,7 @@
                     <span class="asset-name">{{ row.title }}</span>
                     <el-tag size="small" effect="plain" class="flat-tag-mini">{{ row.categoryName }}</el-tag>
                     <el-tag size="small" v-if="row.major" effect="plain" class="flat-tag-mini major">{{ row.major
-                      }}</el-tag>
+                    }}</el-tag>
                   </div>
                   <div class="info-sub">
                     <span class="tech-stack-text">{{ row.techStack }}</span>
@@ -86,7 +86,10 @@
                     <div class="status-wrap">
                       <el-switch v-model="row.status" :active-value="1" :inactive-value="0" size="small"
                         @change="handleStatusChange(row)" class="mini-switch" />
-                      <span class="time-stamp">{{ formatDate(row.createTime) }}</span>
+                      <div class="time-tag">
+                        <lucide-clock :size="10" />
+                        <span class="time-stamp">{{ formatDate(row.createTime) }}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -442,7 +445,7 @@ onMounted(() => {
 
 .asset-row-item {
   display: grid;
-  grid-template-columns: 80px 1fr 180px 220px 100px;
+  grid-template-columns: 80px 1fr 160px 240px 120px;
   align-items: center;
   gap: 24px;
   padding: 12px 16px;
@@ -544,7 +547,7 @@ onMounted(() => {
 
 .asset-row-metrics {
   display: flex;
-  gap: 20px;
+  gap: 16px;
 }
 
 .metric-item {
@@ -601,14 +604,24 @@ onMounted(() => {
 .status-wrap {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+}
+
+.time-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  background: rgba(var(--admin-text-muted-rgb), 0.1);
+  border-radius: 4px;
+  color: var(--admin-text-muted);
+  opacity: 0.7;
 }
 
 .time-stamp {
   font-family: var(--font-data);
   font-size: 10px;
-  color: var(--admin-text-muted);
-  opacity: 0.6;
+  white-space: nowrap;
 }
 
 /* Actions (Hover) */
