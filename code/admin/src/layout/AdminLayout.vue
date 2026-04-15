@@ -1,6 +1,6 @@
 <template>
-  <el-container class="admin-layout">
-    <el-aside width="260px" class="admin-aside">
+  <el-container class="admin-layout" :class="{ 'is-sidebar-collapsed': isCollapse }">
+    <el-aside :width="asideWidth" class="admin-aside" v-if="!isMobile || drawerVisible">
       <div class="logo-container">
         <div class="logo-glow"></div>
         <img src="@/assets/logo.jpg" alt="GradBox Logo" class="admin-logo-img" />
@@ -12,6 +12,7 @@
           :default-active="activeMenu"
           router
           class="admin-menu"
+          :collapse="isCollapse"
         >
           <el-menu-item index="/">
             <el-icon><LucideLayoutDashboard /></el-icon>
@@ -56,11 +57,52 @@
         </div>
       </div>
     </el-aside>
+
+    <!-- Mobile Sidebar Drawer -->
+    <el-drawer
+      v-model="drawerVisible"
+      direction="ltr"
+      size="260px"
+      :with-header="false"
+      class="mobile-aside-drawer"
+      v-if="isMobile"
+    >
+      <div class="admin-aside is-drawer">
+        <div class="logo-container">
+          <img src="@/assets/logo.jpg" alt="GradBox Logo" class="admin-logo-img" />
+          <span class="logo-text">GradBox</span>
+        </div>
+        <el-scrollbar>
+          <el-menu :default-active="activeMenu" router class="admin-menu" @select="drawerVisible = false">
+            <el-menu-item index="/">
+              <el-icon><LucideLayoutDashboard /></el-icon>
+              <span>概览仪表盘</span>
+            </el-menu-item>
+            <div class="menu-divider">资产治理</div>
+            <el-menu-item index="/projects">
+              <el-icon><LucideFolderArchive /></el-icon>
+              <span>项目档案库</span>
+            </el-menu-item>
+            <el-menu-item index="/categories">
+              <el-icon><LucideTags /></el-icon>
+              <span>分类拓扑树</span>
+            </el-menu-item>
+            <el-menu-item index="/services">
+              <el-icon><LucideMessageCircle /></el-icon>
+              <span>工单咨询室</span>
+            </el-menu-item>
+          </el-menu>
+        </el-scrollbar>
+      </div>
+    </el-drawer>
     
     <el-container class="main-container">
       <el-header class="admin-header">
         <div class="header-left">
-          <el-breadcrumb separator="/">
+          <div class="menu-toggle-btn" @click="toggleSidebar">
+            <el-icon><LucideMenu /></el-icon>
+          </div>
+          <el-breadcrumb separator="/" class="hidden-mobile">
             <el-breadcrumb-item :to="{ path: '/' }">后台</el-breadcrumb-item>
             <el-breadcrumb-item>{{ currentPathTitle }}</el-breadcrumb-item>
           </el-breadcrumb>
@@ -118,26 +160,45 @@ import {
   Bell as LucideBell,
   Moon as LucideMoon,
   Sun as LucideSun,
-  ArrowDown as LucideArrowDown
+  ArrowDown as LucideArrowDown,
+  Menu as LucideMenu
 } from 'lucide-vue-next'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, onUnmounted } from 'vue'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 
-const activeMenu = computed(() => route.path)
-const isDark = ref(localStorage.getItem('admin-theme') === 'dark')
+const isCollapse = ref(localStorage.getItem('admin-sidebar-collapsed') === 'true')
+const drawerVisible = ref(false)
+const screenWidth = ref(window.innerWidth)
+const isMobile = computed(() => screenWidth.value < 1024)
 
-const toggleTheme = () => {
-  isDark.value = !isDark.value
-  const mode = isDark.value ? 'dark' : 'light'
-  document.documentElement.classList.toggle('dark', isDark.value)
-  localStorage.setItem('admin-theme', mode)
+const asideWidth = computed(() => {
+  if (isMobile.value) return '0px'
+  return isCollapse.value ? '80px' : '260px'
+})
+
+const toggleSidebar = () => {
+  if (isMobile.value) {
+    drawerVisible.value = !drawerVisible.value
+  } else {
+    isCollapse.value = !isCollapse.value
+    localStorage.setItem('admin-sidebar-collapsed', isCollapse.value.toString())
+  }
+}
+
+const handleResize = () => {
+  screenWidth.value = window.innerWidth
 }
 
 onMounted(() => {
   document.documentElement.classList.toggle('dark', isDark.value)
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
 })
 
 const currentPathTitle = computed(() => {
@@ -183,6 +244,14 @@ const handleCommand = (command: string) => {
   position: relative;
   z-index: 100;
   box-shadow: 10px 0 30px rgba(0, 0, 0, 0.02);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.admin-aside.is-drawer {
+  height: 100%;
+  width: 100% !important;
+  border-right: none;
 }
 
 .logo-container {
@@ -296,8 +365,39 @@ const handleCommand = (command: string) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 48px;
-  height: 80px !important;
+  padding: 0 24px;
+  height: var(--header-height) !important;
+  position: sticky;
+  top: 0;
+  z-index: 90;
+}
+
+.menu-toggle-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 10px;
+  color: var(--admin-text-main);
+  transition: all 0.3s;
+  background: var(--admin-surface-light);
+  margin-right: 12px;
+}
+
+.menu-toggle-btn:hover {
+  background: var(--admin-primary-glow);
+  color: var(--admin-primary);
+}
+
+@media (max-width: 768px) {
+  .hidden-mobile {
+    display: none;
+  }
+  .admin-header {
+    padding: 0 16px;
+  }
 }
 
 :deep(.el-breadcrumb__inner) {
@@ -364,7 +464,8 @@ const handleCommand = (command: string) => {
 /* --- Main Content --- */
 .admin-main {
   background-color: var(--admin-bg);
-  padding: 32px;
+  padding: var(--canvas-padding);
+  overflow-x: hidden;
 }
 
 /* Status Indicator */

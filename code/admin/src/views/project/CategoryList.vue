@@ -192,18 +192,22 @@ onMounted(loadData)
 <style scoped>
 .category-view-wrapper {
   animation: fade-in 0.5s ease-out;
+  padding: 0 var(--canvas-padding) 40px;
 }
 
 /* --- Header --- */
 .view-header {
+  min-height: var(--header-height);
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
   margin-bottom: 32px;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 .view-title {
-  font-size: 28px;
+  font-size: clamp(24px, 3vw, 28px);
   font-weight: 800;
   color: var(--admin-text-main);
   letter-spacing: -1px;
@@ -212,6 +216,13 @@ onMounted(loadData)
 .view-subtitle {
   color: var(--admin-text-muted);
   font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .view-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 /* --- Table --- */

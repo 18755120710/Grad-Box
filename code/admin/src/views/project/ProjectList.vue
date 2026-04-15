@@ -355,19 +355,22 @@ onMounted(() => {
 
 <style scoped>
 .project-view-wrapper {
-  padding: 0 40px 100px;
+  padding: 0 var(--canvas-padding) 100px;
   max-width: 1400px;
   margin: 0 auto;
 }
 
 /* --- View Header (Seamless) --- */
 .view-header-seamless {
-  height: 80px;
+  min-height: 80px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
   border-bottom: 1px solid var(--admin-border);
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px 0;
 }
 
 .header-left {
@@ -397,8 +400,18 @@ onMounted(() => {
 .seamless-canvas {
   display: grid;
   grid-template-columns: 1fr 320px;
-  gap: 60px;
+  gap: var(--canvas-gap);
   align-items: start;
+}
+
+@media (max-width: 1200px) {
+  .seamless-canvas {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .canvas-support-stream {
+    order: -1;
+  }
 }
 
 .canvas-main-flow {
@@ -426,6 +439,19 @@ onMounted(() => {
   text-align: right;
   white-space: nowrap;
   pointer-events: none;
+  opacity: 0.8;
+}
+
+@media (max-width: 1480px) {
+  .section-indicator {
+    position: relative;
+    left: 0;
+    top: 0;
+    transform: none;
+    text-align: left;
+    display: block;
+    margin-bottom: 12px;
+  }
 }
 
 .stream-header-seamless {
@@ -469,16 +495,59 @@ onMounted(() => {
 }
 
 .asset-row-item {
-  display: grid;
-  grid-template-columns: 80px 1fr 160px 240px 120px;
+  display: flex;
   align-items: center;
   gap: 24px;
-  padding: 12px 16px;
+  padding: 16px;
   background: var(--admin-surface-light);
   border: 1px solid var(--admin-border);
   border-radius: 14px;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
+  min-width: 0;
+}
+
+@media (max-width: 1024px) {
+  .asset-row-item {
+    gap: 16px;
+    padding: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .asset-row-item {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  
+  .asset-row-preview {
+    width: 60px;
+    height: 40px;
+  }
+  
+  .asset-row-info {
+    flex: 1;
+    min-width: 120px;
+  }
+  
+  .asset-row-metrics {
+    width: 100%;
+    justify-content: flex-start;
+    padding-left: 76px;
+  }
+  
+  .asset-row-meta {
+    width: 100%;
+    justify-content: space-between !important;
+    padding-top: 12px;
+    border-top: 1px border var(--admin-border);
+  }
+  
+  .asset-row-actions {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+  }
 }
 
 .asset-row-item:hover {
@@ -570,9 +639,15 @@ onMounted(() => {
   opacity: 0.8;
 }
 
+.asset-row-info {
+  flex: 1;
+  min-width: 0;
+}
+
 .asset-row-metrics {
   display: flex;
   gap: 16px;
+  flex-shrink: 0;
 }
 
 .metric-item {
@@ -654,6 +729,7 @@ onMounted(() => {
   display: flex;
   gap: 6px;
   justify-content: flex-end;
+  flex-shrink: 0;
 }
 
 .action-btn-lite {

@@ -280,18 +280,22 @@ onMounted(loadData)
 <style scoped>
 .user-view-wrapper {
   animation: fade-in 0.5s ease-out;
+  padding: 0 var(--canvas-padding) 40px;
 }
 
 /* --- Header --- */
 .view-header {
+  min-height: var(--header-height);
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
   margin-bottom: 32px;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 .view-title {
-  font-size: 28px;
+  font-size: clamp(24px, 3vw, 28px);
   font-weight: 800;
   color: var(--admin-text-main);
   letter-spacing: -1px;
@@ -303,8 +307,23 @@ onMounted(loadData)
   margin-top: 4px;
 }
 
+@media (max-width: 768px) {
+  .view-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
 /* --- Filter --- */
-.filter-bar { padding: 20px 32px; margin-bottom: 24px; }
+.filter-bar { padding: 20px 24px; margin-bottom: 24px; }
+
+@media (max-width: 768px) {
+  .oled-filter-form :deep(.el-form-item) {
+    margin-right: 0;
+    margin-bottom: 16px;
+    width: 100%;
+  }
+}
 
 /* --- Table Area --- */
 .table-container { padding: 0; overflow: hidden; }

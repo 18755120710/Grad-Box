@@ -1331,7 +1331,7 @@ const LucidePlus = (props: any) => h('svg', { ...props, 'xmlns': 'http://www.w3.
 
 .project-detail-wrapper {
   animation: canvas-fade 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-  padding: 0 40px 100px;
+  padding: 0 var(--canvas-padding) 100px;
   max-width: 1400px;
   margin: 0 auto;
   color: var(--admin-text-main);
@@ -1346,7 +1346,7 @@ const LucidePlus = (props: any) => h('svg', { ...props, 'xmlns': 'http://www.w3.
 
 /* --- Header & Navigation --- */
 .view-header {
-  min-height: 80px;
+  min-height: var(--header-height);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1357,13 +1357,11 @@ const LucidePlus = (props: any) => h('svg', { ...props, 'xmlns': 'http://www.w3.
   padding: 12px 0;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .view-header {
     flex-direction: column;
     align-items: flex-start;
-    height: auto;
   }
-  
   .header-ops {
     width: 100%;
     justify-content: flex-end;
@@ -1433,10 +1431,11 @@ const LucidePlus = (props: any) => h('svg', { ...props, 'xmlns': 'http://www.w3.
 .seamless-canvas {
   display: grid;
   grid-template-columns: 1fr 340px;
-  gap: 60px;
+  gap: var(--canvas-gap);
   position: relative;
   margin-top: 40px;
   transition: all 0.4s ease;
+  min-width: 0;
 }
 
 @media (max-width: 1400px) {
@@ -1454,8 +1453,7 @@ const LucidePlus = (props: any) => h('svg', { ...props, 'xmlns': 'http://www.w3.
 
 @media (max-width: 1100px) {
   .seamless-canvas {
-    display: flex;
-    flex-direction: column;
+    grid-template-columns: 1fr;
     gap: 48px;
   }
 
@@ -1466,6 +1464,7 @@ const LucidePlus = (props: any) => h('svg', { ...props, 'xmlns': 'http://www.w3.
 
   .canvas-main-flow {
     order: 1;
+    min-width: 0;
   }
 }
 
@@ -1493,6 +1492,7 @@ const LucidePlus = (props: any) => h('svg', { ...props, 'xmlns': 'http://www.w3.
   transform-origin: top left;
   letter-spacing: 1px;
   transition: all 0.3s ease;
+  z-index: 10;
 }
 
 @media (max-width: 1480px) {
@@ -1501,9 +1501,9 @@ const LucidePlus = (props: any) => h('svg', { ...props, 'xmlns': 'http://www.w3.
     left: 0;
     top: 0;
     transform: none;
-    margin-bottom: 12px;
+    margin-bottom: 20px;
     display: block;
-    opacity: 0.6;
+    opacity: 0.8;
   }
   
   .canvas-section {
@@ -1699,6 +1699,13 @@ const LucidePlus = (props: any) => h('svg', { ...props, 'xmlns': 'http://www.w3.
   height: 520px;
   border: none !important;
   background: var(--admin-surface);
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .distilled-editor {
+    height: 400px;
+  }
 }
 
 /* --- Assets Flow --- */

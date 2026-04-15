@@ -234,18 +234,22 @@ onMounted(loadData)
 <style scoped>
 .consultation-view-wrapper {
   animation: fade-in 0.5s ease-out;
+  padding: 0 var(--canvas-padding) 40px;
 }
 
 /* --- Header --- */
 .view-header {
+  min-height: var(--header-height);
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
   margin-bottom: 32px;
+  gap: 24px;
+  flex-wrap: wrap;
 }
 
 .view-title {
-  font-size: 28px;
+  font-size: clamp(24px, 3vw, 28px);
   font-weight: 800;
   color: var(--admin-text-main);
   letter-spacing: -1px;
@@ -256,7 +260,14 @@ onMounted(loadData)
   font-size: 14px;
 }
 
-.header-stats { display: flex; gap: 24px; }
+.header-stats { display: flex; gap: 24px; align-items: center; }
+
+@media (max-width: 640px) {
+  .view-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
 .mini-stat { display: flex; flex-direction: column; align-items: flex-end; }
 .mini-stat .label { font-size: 11px; color: var(--admin-text-muted); text-transform: uppercase; letter-spacing: 1px; }
 .mini-stat .value { font-size: 20px; font-weight: 800; font-family: var(--font-data); }

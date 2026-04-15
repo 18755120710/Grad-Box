@@ -2,7 +2,7 @@
   <div class="dashboard-wrapper">
     <!-- Top Stats Row -->
     <el-row :gutter="24" class="stats-row">
-      <el-col :span="8" v-for="item in statsConfig" :key="item.title">
+      <el-col :xs="24" :sm="12" :md="8" v-for="item in statsConfig" :key="item.title">
         <div class="glass-card stat-card">
           <div class="stat-icon" :style="{ color: item.color, background: item.glow }">
             <component :is="item.icon" :size="24" />
@@ -23,7 +23,7 @@
 
     <!-- Main Charts Row -->
     <el-row :gutter="24" class="charts-row">
-      <el-col :span="12">
+      <el-col :xs="24" :lg="12">
         <div class="glass-card main-chart-card">
           <div class="card-header">
             <h4 class="card-title">业务流量态势 (实时)</h4>
@@ -40,7 +40,7 @@
         </div>
       </el-col>
       
-      <el-col :span="6">
+      <el-col :xs="24" :sm="12" :lg="6">
         <div class="glass-card sub-chart-card">
           <div class="card-header">
             <h4 class="card-title">资源分布比例</h4>
@@ -51,7 +51,7 @@
         </div>
       </el-col>
 
-      <el-col :span="6">
+      <el-col :xs="24" :sm="12" :lg="6">
         <div class="glass-card sub-chart-card">
           <div class="card-header">
             <h4 class="card-title">咨询状态分布</h4>
