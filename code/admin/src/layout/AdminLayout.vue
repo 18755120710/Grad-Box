@@ -173,6 +173,14 @@ const isCollapse = ref(localStorage.getItem('admin-sidebar-collapsed') === 'true
 const drawerVisible = ref(false)
 const screenWidth = ref(window.innerWidth)
 const isMobile = computed(() => screenWidth.value < 1024)
+const isDark = ref(localStorage.getItem('admin-theme') === 'dark')
+
+const toggleTheme = () => {
+  isDark.value = !isDark.value
+  const mode = isDark.value ? 'dark' : 'light'
+  document.documentElement.classList.toggle('dark', isDark.value)
+  localStorage.setItem('admin-theme', mode)
+}
 
 const asideWidth = computed(() => {
   if (isMobile.value) return '0px'
