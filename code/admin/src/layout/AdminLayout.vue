@@ -53,7 +53,7 @@
       <div class="aside-footer">
         <div class="status-indicator">
           <span class="pulse-dot"></span>
-          系统运行正常
+          <span class="status-text">系统运行正常</span>
         </div>
       </div>
     </el-aside>
@@ -395,7 +395,7 @@ const handleCommand = (command: string) => {
   justify-content: center;
 }
 
-.is-sidebar-collapsed .aside-footer .status-indicator span:not(.pulse-dot) {
+.is-sidebar-collapsed .aside-footer .status-text {
   display: none;
 }
 
