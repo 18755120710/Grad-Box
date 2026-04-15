@@ -333,6 +333,11 @@ const handleCommand = (command: string) => {
   padding: 20px 16px;
   background-color: transparent !important;
   border-right: none !important;
+  transition: padding 0.3s;
+}
+
+.is-sidebar-collapsed .admin-menu {
+  padding: 20px 0;
 }
 
 .menu-divider {
@@ -370,6 +375,10 @@ const handleCommand = (command: string) => {
   margin-right: 14px;
 }
 
+.is-sidebar-collapsed :deep(.el-menu-item .el-icon) {
+  margin-right: 0;
+}
+
 :deep(.el-menu-item.is-active) {
   color: white !important;
   background: var(--brand-primary) !important;
@@ -381,6 +390,16 @@ const handleCommand = (command: string) => {
   color: var(--admin-text-main) !important;
   transform: translateX(4px);
   border-color: var(--admin-border);
+}
+
+.is-sidebar-collapsed :deep(.el-menu-item:hover:not(.is-active)) {
+  transform: none;
+}
+
+.is-sidebar-collapsed :deep(.el-menu-item) {
+  display: flex !important;
+  justify-content: center !important;
+  padding: 0 !important;
 }
 
 .aside-footer {
