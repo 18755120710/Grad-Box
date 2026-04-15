@@ -269,6 +269,12 @@ const handleCommand = (command: string) => {
   padding: 0 32px;
   gap: 16px;
   position: relative;
+  transition: all 0.3s;
+}
+
+.is-sidebar-collapsed .logo-container {
+  padding: 0;
+  justify-content: center;
 }
 
 .logo-glow {
@@ -301,6 +307,14 @@ const handleCommand = (command: string) => {
   font-family: var(--font-main);
   text-transform: uppercase;
   italic: true;
+  transition: opacity 0.3s;
+}
+
+.is-sidebar-collapsed .logo-text,
+.is-sidebar-collapsed .admin-badge,
+.is-sidebar-collapsed .logo-glow {
+  opacity: 0;
+  display: none;
 }
 
 .admin-badge {
@@ -329,6 +343,15 @@ const handleCommand = (command: string) => {
   color: var(--admin-text-muted);
   font-weight: 900;
   opacity: 0.5;
+  transition: opacity 0.3s;
+}
+
+.is-sidebar-collapsed .menu-divider {
+  opacity: 0;
+  height: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
 }
 
 :deep(.el-menu-item) {
@@ -363,6 +386,17 @@ const handleCommand = (command: string) => {
 .aside-footer {
   padding: 24px 32px;
   border-top: 1px solid var(--admin-border);
+  transition: all 0.3s;
+}
+
+.is-sidebar-collapsed .aside-footer {
+  padding: 24px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.is-sidebar-collapsed .aside-footer .status-indicator span:not(.pulse-dot) {
+  display: none;
 }
 
 /* --- Header --- */
