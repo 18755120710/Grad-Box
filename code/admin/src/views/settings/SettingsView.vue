@@ -87,7 +87,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import axios from '@/utils/request' // Assuming axios instance exists
+import request from '@/utils/request'
 import {
   Save as LucideSave,
   Palette as LucidePalette,
@@ -108,9 +108,9 @@ const config = reactive({
 
 const fetchConfig = async () => {
   try {
-    const res = await axios.get('/configs/system')
-    if (res.data.code === 200) {
-      Object.assign(config, res.data.data)
+    const res: any = await request.get('/api/configs/system')
+    if (res.code === 200) {
+      Object.assign(config, res.data)
     }
   } catch (error) {
     ElMessage.error('系统预设加载失败')
@@ -122,8 +122,8 @@ onMounted(fetchConfig)
 const handleSave = async () => {
   saving.value = true
   try {
-    const res = await axios.post('/configs/system', config)
-    if (res.data.code === 200) {
+    const res: any = await request.post('/api/configs/system', config)
+    if (res.code === 200) {
       ElMessage.success('全局预设同步成功，部分变更将在下次刷新生效')
     }
   } catch (error) {
