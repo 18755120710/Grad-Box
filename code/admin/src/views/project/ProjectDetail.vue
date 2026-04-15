@@ -559,7 +559,9 @@ import {
   LucideSettings,
   LucideSearch,
   LucideTrash2,
-  LucidePlusCircle
+  LucidePlusCircle,
+  LucideAlertCircle,
+  LucideLayers
 } from 'lucide-vue-next'
 import { MdEditor } from 'md-editor-v3'
 import { h } from 'vue'

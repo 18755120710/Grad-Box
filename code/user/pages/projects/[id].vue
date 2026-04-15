@@ -4,29 +4,20 @@
       <!-- Immersive Header Section -->
       <section class="relative h-[65vh] overflow-hidden bg-profound-black group">
         <div class="absolute inset-0">
-          <el-carousel v-if="mediaItems.length > 0" 
-                       trigger="click" 
-                       height="65vh" 
-                       :autoplay="false"
-                       arrow="always" 
-                       class="w-full h-full opacity-95 transition-opacity duration-500 custom-carousel">
+          <el-carousel v-if="mediaItems.length > 0" trigger="click" height="65vh" :autoplay="false" arrow="always"
+            class="w-full h-full opacity-95 transition-opacity duration-500 custom-carousel">
             <el-carousel-item v-for="(item, index) in mediaItems" :key="index">
-              <div class="w-full h-full relative group cursor-pointer overflow-hidden" 
-                   @click="handleMediaClick(item, index)">
-                <video v-if="item.mediaType === 2" 
-                       :src="item.mediaUrl" 
-                       autoplay 
-                       muted 
-                       loop 
-                       playsinline
-                       class="w-full h-full object-cover pointer-events-none" />
-                <img v-else 
-                     :src="item.mediaUrl" 
-                     class="w-full h-full object-cover pointer-events-none" />
-                
+              <div class="w-full h-full relative group cursor-pointer overflow-hidden"
+                @click="handleMediaClick(item, index)">
+                <video v-if="item.mediaType === 2" :src="item.mediaUrl" autoplay muted loop playsinline
+                  class="w-full h-full object-cover pointer-events-none" />
+                <img v-else :src="item.mediaUrl" class="w-full h-full object-cover pointer-events-none" />
+
                 <!-- Overlay Indicators -->
-                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-profound-black/30">
-                  <PlayCircle v-if="item.mediaType === 2" :size="80" class="text-white drop-shadow-2xl animate-pulse pointer-events-none" />
+                <div
+                  class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-profound-black/30">
+                  <PlayCircle v-if="item.mediaType === 2" :size="80"
+                    class="text-white drop-shadow-2xl animate-pulse pointer-events-none" />
                   <Maximize2 v-else :size="56" class="text-white drop-shadow-2xl pointer-events-none" />
                 </div>
               </div>
@@ -35,41 +26,54 @@
           <div class="absolute inset-0 bg-profound-black/30 pointer-events-none"></div>
         </div>
 
-        <div class="relative h-full max-w-7xl mx-auto px-6 sm:px-8 flex flex-col justify-center space-y-8 pointer-events-none">
+        <div
+          class="relative h-full max-w-7xl mx-auto px-6 sm:px-8 flex flex-col justify-center space-y-8 pointer-events-none">
           <div class="flex items-center gap-3 animate-fade-in pointer-events-auto">
-            <span class="px-5 py-2 bg-primary text-white text-[9px] font-bold uppercase tracking-profound rounded-lg shadow-xl shadow-primary/20">
+            <span
+              class="px-5 py-2 bg-primary text-white text-[9px] font-bold uppercase tracking-profound rounded-lg shadow-xl shadow-primary/20">
               {{ project.categoryName || '精品项目' }}
             </span>
-            <span v-if="project.major" class="px-5 py-2 bg-white/10 backdrop-blur-md text-white text-[9px] font-bold uppercase tracking-profound rounded-lg border border-white/20">
+            <span v-if="project.major"
+              class="px-5 py-2 bg-white/10 backdrop-blur-md text-white text-[9px] font-bold uppercase tracking-profound rounded-lg border border-white/20">
               {{ project.major }}
             </span>
-            <span class="text-white/20 font-mono text-[10px] tracking-widest uppercase">REF_ID: #{{ project.id.toString().padStart(6, '0') }}</span>
+            <span class="text-white/20 font-mono text-[10px] tracking-widest uppercase">REF_ID: #{{
+              project.id.toString().padStart(6, '0') }}</span>
           </div>
-          
-          <h1 class="text-5xl md:text-7xl font-display text-white tracking-tighter-profound leading-[1.0] max-w-5xl animate-fade-in-up uppercase pointer-events-auto">
+
+          <h1
+            class="text-5xl md:text-7xl font-display text-white tracking-tighter-profound leading-[1.0] max-w-5xl animate-fade-in-up uppercase pointer-events-auto">
             {{ project.title }}
           </h1>
 
-          <div class="flex flex-wrap gap-3 items-center animate-fade-in pointer-events-auto" style="animation-delay: 200ms">
-            <div v-for="tag in techTags" :key="tag" 
-                 class="px-5 py-2.5 bg-white/5 backdrop-blur-xl border border-white/10 text-white rounded-xl text-xs font-bold hover:bg-white/20 transition-all cursor-default">
+          <div class="flex flex-wrap gap-3 items-center animate-fade-in pointer-events-auto"
+            style="animation-delay: 200ms">
+            <div v-for="tag in techTags" :key="tag"
+              class="px-5 py-2.5 bg-white/5 backdrop-blur-xl border border-white/10 text-white rounded-xl text-xs font-bold hover:bg-white/20 transition-all cursor-default">
               {{ tag }}
             </div>
           </div>
 
           <!-- Classification Tags -->
           <div v-if="project.tags" class="flex flex-wrap gap-2 animate-fade-in" style="animation-delay: 150ms">
-            <span v-for="tag in project.tags.split(',')" :key="tag" 
-                  class="px-4 py-1.5 bg-primary/20 border border-primary/30 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider backdrop-blur-md hover:bg-primary/40 transition-colors cursor-default">
+            <span v-for="tag in project.tags.split(',')" :key="tag"
+              class="px-4 py-1.5 bg-primary/20 border border-primary/30 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider backdrop-blur-md hover:bg-primary/40 transition-colors cursor-default">
               {{ tag }}
             </span>
           </div>
-          
+
           <!-- Quick Stats Overlay -->
-          <div class="flex gap-10 pt-6 text-white/40 font-bold uppercase tracking-profound text-[9px] pointer-events-auto">
-            <div class="flex items-center gap-2"><Eye :size="14" class="text-primary" /> {{ project.viewCount }} Views</div>
-            <div class="flex items-center gap-2"><Download :size="14" class="text-primary" /> {{ project.downloadCount || 0 }} Deliveries</div>
-            <div class="flex items-center gap-2"><Star :size="14" class="text-primary" /> 4.9 Rating</div>
+          <div
+            class="flex gap-10 pt-6 text-white/40 font-bold uppercase tracking-profound text-[9px] pointer-events-auto">
+            <div class="flex items-center gap-2">
+              <Eye :size="14" class="text-primary" /> {{ project.viewCount }} Views
+            </div>
+            <div class="flex items-center gap-2">
+              <Download :size="14" class="text-primary" /> {{ project.downloadCount || 0 }} Deliveries
+            </div>
+            <div class="flex items-center gap-2">
+              <Star :size="14" class="text-primary" /> 4.9 Rating
+            </div>
           </div>
         </div>
       </section>
@@ -78,29 +82,28 @@
       <div class="max-w-7xl mx-auto px-6 sm:px-8 -mt-24 relative z-10 pb-40">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
           <div class="lg:col-span-2 space-y-12">
-            <div class="bg-white p-2 rounded-5xl shadow-2xl shadow-slate-200/50 overflow-hidden border border-slate-100">
+            <div
+              class="bg-white p-2 rounded-5xl shadow-2xl shadow-slate-200/50 overflow-hidden border border-slate-100">
               <!-- Professional Tabs -->
               <div class="flex p-3 border-b border-slate-50 gap-2 overflow-x-auto no-scrollbar">
-                <button v-for="tab in tabOptions" :key="tab.id"
-                        v-show="tab.show !== false"
-                        @click="activeTab = tab.id"
-                        class="px-8 py-4 rounded-3xl text-xs font-bold transition-all duration-500 whitespace-nowrap flex items-center gap-2"
-                        :class="activeTab === tab.id ? 'bg-profound-black text-white shadow-xl scale-[1.02]' : 'text-slate-400 hover:text-profound-black hover:bg-slate-50'">
+                <button v-for="tab in tabOptions" :key="tab.id" v-show="tab.show !== false" @click="activeTab = tab.id"
+                  class="px-8 py-4 rounded-3xl text-xs font-bold transition-all duration-500 whitespace-nowrap flex items-center gap-2"
+                  :class="activeTab === tab.id ? 'bg-profound-black text-white shadow-xl scale-[1.02]' : 'text-slate-400 hover:text-profound-black hover:bg-slate-50'">
                   <component :is="tab.icon" :size="16" />
                   {{ tab.label }}
                 </button>
-                
-                <button v-if="project.downloadUrl"
-                        @click="handleDownload"
-                        :disabled="downloadStates[project.downloadUrl]?.status === 'downloading'"
-                        class="px-8 py-4 rounded-3xl text-xs font-bold transition-all duration-500 whitespace-nowrap flex items-center gap-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white shadow-sm hover:shadow-emerald-200 relative overflow-hidden group">
-                  <div v-if="downloadStates[project.downloadUrl]?.status === 'downloading'" 
-                       class="absolute inset-0 bg-emerald-600/10" 
-                       :style="{ width: downloadStates[project.downloadUrl].progress + '%' }"></div>
+
+                <button v-if="project.downloadUrl" @click="handleDownload"
+                  :disabled="downloadStates[project.downloadUrl]?.status === 'downloading'"
+                  class="px-8 py-4 rounded-3xl text-xs font-bold transition-all duration-500 whitespace-nowrap flex items-center gap-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white shadow-sm hover:shadow-emerald-200 relative overflow-hidden group">
+                  <div v-if="downloadStates[project.downloadUrl]?.status === 'downloading'"
+                    class="absolute inset-0 bg-emerald-600/10"
+                    :style="{ width: downloadStates[project.downloadUrl].progress + '%' }"></div>
                   <Download :size="16" class="relative z-10" />
-                  <span class="relative z-10">{{ 
-                    downloadStates[project.downloadUrl]?.status === 'downloading' ? `已下载 ${downloadStates[project.downloadUrl].progress}%` :
-                    (downloadStates[project.downloadUrl]?.status === 'merging' ? '正在合并...' : '资源下载')
+                  <span class="relative z-10">{{
+                    downloadStates[project.downloadUrl]?.status === 'downloading' ? `已下载
+                    ${downloadStates[project.downloadUrl].progress}%` :
+                      (downloadStates[project.downloadUrl]?.status === 'merging' ? '正在合并...' : '资源下载')
                   }}</span>
                 </button>
               </div>
@@ -116,13 +119,54 @@
                   </div>
 
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div v-for="feat in serviceFeatures" :key="feat.title" 
-                         class="p-8 rounded-4xl bg-slate-50 border border-slate-100 space-y-3 group hover:bg-primary transition-all duration-500">
-                      <div class="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center text-primary group-hover:scale-110 transition-all">
+                    <div v-for="feat in serviceFeatures" :key="feat.title"
+                      class="p-8 rounded-4xl bg-slate-50 border border-slate-100 space-y-3 group hover:bg-primary transition-all duration-500">
+                      <div
+                        class="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center text-primary group-hover:scale-110 transition-all">
                         <component :is="feat.icon" :size="24" />
                       </div>
-                      <h4 class="text-xl font-bold text-profound-black group-hover:text-white transition-colors">{{ feat.title }}</h4>
-                      <p class="text-slate-500 group-hover:text-white/70 transition-colors text-xs font-medium leading-relaxed">{{ feat.desc }}</p>
+                      <h4 class="text-xl font-bold text-profound-black group-hover:text-white transition-colors">{{
+                        feat.title }}</h4>
+                      <p
+                        class="text-slate-500 group-hover:text-white/70 transition-colors text-xs font-medium leading-relaxed">
+                        {{ feat.desc }}</p>
+                    </div>
+                  </div>
+
+                  <!-- Resource Structure Tree -->
+                  <div v-if="resourceTree?.length > 0" class="space-y-6 pt-6">
+                    <h3 class="text-2xl font-display text-profound-black uppercase">包含资源清单</h3>
+                    <div class="p-8 rounded-4xl bg-slate-50/50 border border-dashed border-slate-200">
+                      <div class="space-y-1">
+                        <ResourceTreeNode v-for="node in resourceTree" :key="node.id" :node="node" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div v-if="activeTab === 'notes'" class="space-y-10 animate-fade-in">
+                  <div class="space-y-6">
+                    <h3 class="text-2xl font-display text-profound-black uppercase tracking-tighter">交付说明 & 注意事项</h3>
+                    <div
+                      class="p-10 rounded-5xl bg-amber-50/30 border border-amber-100/50 space-y-8 relative overflow-hidden group hover:bg-amber-50/50 transition-all duration-700">
+                      <div
+                        class="absolute -top-10 -right-10 w-40 h-40 bg-amber-200/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000">
+                      </div>
+                      <div class="flex items-center gap-4 text-amber-600">
+                        <div class="w-14 h-14 rounded-2xl bg-white shadow-xl flex items-center justify-center">
+                          <AlertCircle :size="28" />
+                        </div>
+                        <div class="space-y-0.5">
+                          <p class="text-xs font-bold uppercase tracking-[0.2em] opacity-50">Important Notice</p>
+                          <p class="text-sm font-black uppercase tracking-profound">关键交付提示</p>
+                        </div>
+                      </div>
+                      <div class="h-px bg-amber-100/50 w-full"></div>
+                      <div class="prose prose-amber max-w-none">
+                        <p class="text-lg text-amber-900/80 font-medium leading-relaxed whitespace-pre-wrap selection:bg-amber-200">
+                          {{ project.notes }}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -134,14 +178,17 @@
                         <CheckCircle class="text-emerald-500" /> 核心功能模块
                       </h4>
                       <ul class="space-y-3">
-                        <li v-for="item in functionalModules" :key="item" class="flex gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 group hover:border-primary/30 transition-all">
+                        <li v-for="item in functionalModules" :key="item"
+                          class="flex gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 group hover:border-primary/30 transition-all">
                           <div class="w-1.5 h-1.5 rounded-full bg-primary mt-1.5"></div>
                           <span class="text-slate-600 font-bold text-sm">{{ item }}</span>
                         </li>
                       </ul>
                     </div>
                     <div class="space-y-4">
-                      <img :src="project.coverImage || 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop'" class="w-full h-72 object-cover rounded-4xl shadow-xl grayscale hover:grayscale-0 transition-all duration-700" />
+                      <img
+                        :src="project.coverImage || 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop'"
+                        class="w-full h-72 object-cover rounded-4xl shadow-xl grayscale hover:grayscale-0 transition-all duration-700" />
                     </div>
                   </div>
                 </div>
@@ -149,12 +196,13 @@
                 <div v-if="activeTab === 'detail'" class="space-y-12 animate-fade-in">
                   <!-- Deep Analysis Content -->
                   <div class="space-y-6">
-                    <div v-if="project.contentHtml" class="prose prose-slate max-w-none prose-img:rounded-3xl prose-headings:font-display prose-headings:uppercase">
+                    <div v-if="project.contentHtml"
+                      class="prose prose-slate max-w-none prose-img:rounded-3xl prose-headings:font-display prose-headings:uppercase">
                       <md-preview :modelValue="project.contentHtml" />
                     </div>
                     <div v-else class="py-16 text-center border-2 border-dashed border-slate-100 rounded-4xl space-y-4">
-                       <BookOpen :size="32" class="text-slate-200 mx-auto" />
-                       <p class="text-[10px] uppercase tracking-profound text-slate-400 font-bold">深度描述编写中</p>
+                      <BookOpen :size="32" class="text-slate-200 mx-auto" />
+                      <p class="text-[10px] uppercase tracking-profound text-slate-400 font-bold">深度描述编写中</p>
                     </div>
                   </div>
                 </div>
@@ -167,12 +215,14 @@
 
                   <!-- Consultation List (Comment Section Style) -->
                   <div class="space-y-6">
-                    <div v-if="consultations.length > 0" class="space-y-6 max-h-[500px] overflow-y-auto pr-2 no-scrollbar">
-                      <div v-for="item in consultations" :key="item.id" 
-                           class="p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4 hover:shadow-lg transition-all duration-300">
+                    <div v-if="consultations.length > 0"
+                      class="space-y-6 max-h-[500px] overflow-y-auto pr-2 no-scrollbar">
+                      <div v-for="item in consultations" :key="item.id"
+                        class="p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4 hover:shadow-lg transition-all duration-300">
                         <div class="flex justify-between items-start">
                           <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                            <div
+                              class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
                               U
                             </div>
                             <div class="space-y-0.5">
@@ -180,15 +230,18 @@
                               <p class="text-[10px] text-slate-400 font-medium">{{ formatDate(item.createTime) }}</p>
                             </div>
                           </div>
-                          <span v-if="item.status === 1" class="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-full">已回复</span>
-                          <span v-else class="px-3 py-1 bg-amber-50 text-amber-600 text-[10px] font-bold rounded-full">待处理</span>
+                          <span v-if="item.status === 1"
+                            class="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-full">已回复</span>
+                          <span v-else
+                            class="px-3 py-1 bg-amber-50 text-amber-600 text-[10px] font-bold rounded-full">待处理</span>
                         </div>
                         <p class="text-sm text-slate-600 leading-relaxed font-medium">
                           {{ item.content }}
                         </p>
-                        
+
                         <!-- Admin Reply -->
-                        <div v-if="item.reply" class="mt-4 p-5 bg-white rounded-2xl border border-slate-200/50 space-y-2 relative overflow-hidden group">
+                        <div v-if="item.reply"
+                          class="mt-4 p-5 bg-white rounded-2xl border border-slate-200/50 space-y-2 relative overflow-hidden group">
                           <div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
                           <div class="flex items-center gap-2 text-primary">
                             <ShieldCheck :size="14" />
@@ -200,12 +253,13 @@
                         </div>
                       </div>
                     </div>
-                    <div v-else-if="!loadingConsultations" class="py-12 text-center border-2 border-dashed border-slate-100 rounded-4xl space-y-4">
-                       <MessageSquareOff :size="32" class="text-slate-100 mx-auto" />
-                       <p class="text-[10px] uppercase tracking-profound text-slate-400 font-bold">暂无咨询记录</p>
+                    <div v-else-if="!loadingConsultations"
+                      class="py-12 text-center border-2 border-dashed border-slate-100 rounded-4xl space-y-4">
+                      <MessageSquareOff :size="32" class="text-slate-100 mx-auto" />
+                      <p class="text-[10px] uppercase tracking-profound text-slate-400 font-bold">暂无咨询记录</p>
                     </div>
                     <div v-else class="py-12 flex justify-center">
-                       <div class="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                      <div class="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
                     </div>
                   </div>
 
@@ -214,17 +268,18 @@
                   <!-- Submission Form -->
                   <div class="space-y-6 bg-white p-2 rounded-4xl border border-slate-50 shadow-sm">
                     <h4 class="px-6 pt-4 text-sm font-bold text-profound-black flex items-center gap-2">
-                       <MessageCirclePlus :size="16" class="text-primary" /> 我要咨询
+                      <MessageCirclePlus :size="16" class="text-primary" /> 我要咨询
                     </h4>
                     <form @submit.prevent="submitConsultation" class="grid grid-cols-1 gap-4 p-6 pt-2">
                       <textarea v-model="consultForm.content" required placeholder="请详细描述您的问题..."
-                                class="w-full h-32 p-6 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all text-slate-800 text-sm font-medium"></textarea>
+                        class="w-full h-32 p-6 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all text-slate-800 text-sm font-medium"></textarea>
                       <div class="flex flex-col md:flex-row gap-4">
                         <input v-model="consultForm.contactWay" type="text" required placeholder="联系方式 (微信/QQ/邮箱)"
-                               class="flex-1 p-6 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all text-slate-800 text-sm font-medium" />
+                          class="flex-1 p-6 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all text-slate-800 text-sm font-medium" />
                         <button type="submit" :disabled="submittingConsult"
-                                class="px-10 py-5 bg-profound-black text-white rounded-3xl font-bold text-sm hover:bg-primary transition-all flex items-center justify-center gap-2 disabled:opacity-50 group min-w-[180px]">
-                          <MessageCircleQuestion :size="18" class="group-hover:rotate-12 transition-transform" /> {{ submittingConsult ? '正在发送...' : '提交问题' }}
+                          class="px-10 py-5 bg-profound-black text-white rounded-3xl font-bold text-sm hover:bg-primary transition-all flex items-center justify-center gap-2 disabled:opacity-50 group min-w-[180px]">
+                          <MessageCircleQuestion :size="18" class="group-hover:rotate-12 transition-transform" /> {{
+                            submittingConsult ? '正在发送...' : '提交问题' }}
                         </button>
                       </div>
                     </form>
@@ -237,10 +292,16 @@
             <div class="space-y-8 pt-10">
               <div class="flex justify-between items-end">
                 <div class="space-y-2">
-                  <h3 class="text-3xl font-display text-profound-black uppercase italic tracking-tighter-profound">延伸阅读</h3>
-                  <p class="text-slate-400 font-bold uppercase tracking-profound text-[9px]">Related academic projects</p>
+                  <h3 class="text-3xl font-display text-profound-black uppercase italic tracking-tighter-profound">延伸阅读
+                  </h3>
+                  <p class="text-slate-400 font-bold uppercase tracking-profound text-[9px]">Related academic projects
+                  </p>
                 </div>
-                <NuxtLink to="/projects" class="text-primary text-[10px] font-bold uppercase tracking-profound hover:translate-x-1 transition-transform flex items-center gap-1">查看全部 <ArrowRight :size="12" /></NuxtLink>
+                <NuxtLink to="/projects"
+                  class="text-primary text-[10px] font-bold uppercase tracking-profound hover:translate-x-1 transition-transform flex items-center gap-1">
+                  查看全部
+                  <ArrowRight :size="12" />
+                </NuxtLink>
               </div>
               <div v-if="similarProjects?.length" class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <ProjectCard v-for="p in similarProjects" :key="p.id" :project="p" />
@@ -251,11 +312,13 @@
           <!-- Sidebar -->
           <div class="space-y-8">
             <div class="sticky top-28 space-y-8">
-              <div class="bg-profound-black p-10 rounded-5xl shadow-3xl shadow-primary/10 text-white space-y-8 relative overflow-hidden border border-white/5">
+              <div
+                class="bg-profound-black p-10 rounded-5xl shadow-3xl shadow-primary/10 text-white space-y-8 relative overflow-hidden border border-white/5">
                 <div class="absolute -top-10 -right-10 w-40 h-40 bg-primary rounded-full blur-[80px] opacity-20"></div>
-                
+
                 <div class="space-y-1 relative z-10">
-                  <span class="text-slate-500 font-bold uppercase tracking-profound text-[8px]">标准包包含内容 / Ref. Package</span>
+                  <span class="text-slate-500 font-bold uppercase tracking-profound text-[8px]">标准包包含内容 / Ref.
+                    Package</span>
                   <div class="flex items-baseline gap-1 pt-1">
                     <span class="text-3xl font-bold opacity-30 tracking-tighter">¥</span>
                     <span class="text-7xl font-display tracking-tighter-profound">{{ project.price }}</span>
@@ -263,15 +326,16 @@
                 </div>
 
                 <div class="space-y-4 relative z-10">
-                  <div v-for="item in inclusions" :key="item" class="flex items-start gap-3 text-[11px] font-bold text-slate-400">
+                  <div v-for="item in inclusions" :key="item"
+                    class="flex items-start gap-3 text-[11px] font-bold text-slate-400">
                     <Check :size="14" class="text-primary mt-0.5" />
                     {{ item }}
                   </div>
                 </div>
 
-                <button @click="handleContact" 
-                        class="w-full py-6 bg-primary hover:bg-white hover:text-profound-black text-white rounded-3xl font-bold text-sm shadow-xl shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 relative z-10 group">
-                   <MessageCircle :size="20" /> 立即咨询获取
+                <button @click="handleContact"
+                  class="w-full py-6 bg-primary hover:bg-white hover:text-profound-black text-white rounded-3xl font-bold text-sm shadow-xl shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 relative z-10 group">
+                  <MessageCircle :size="20" /> 立即咨询获取
                 </button>
               </div>
 
@@ -283,7 +347,8 @@
                   <h4 class="text-xl font-display text-profound-black uppercase">定制服务</h4>
                   <p class="text-slate-400 font-medium text-[11px] leading-relaxed">导师团队提供个性化功能开发与答辩辅导。</p>
                 </div>
-                <NuxtLink to="/services" class="w-full py-5 rounded-3xl bg-profound-black text-white font-bold text-xs hover:bg-primary transition-all text-center block uppercase tracking-widest">
+                <NuxtLink to="/services"
+                  class="w-full py-5 rounded-3xl bg-profound-black text-white font-bold text-xs hover:bg-primary transition-all text-center block uppercase tracking-widest">
                   进入导师中心
                 </NuxtLink>
               </div>
@@ -293,25 +358,24 @@
       </div>
     </div>
     <div v-else class="min-h-screen flex items-center justify-center">
-       <div class="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+      <div class="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
     </div>
 
     <!-- Media Preview Dialog -->
-    <el-dialog v-model="mediaPreviewVisible" 
-               width="100%" 
-               fullscreen
-               destroy-on-close 
-               align-center
-               append-to-body
-               modal-class="media-preview-overlay"
-               class="media-preview-dialog custom-glass-dialog">
-      <div class="h-screen w-screen bg-transparent flex items-center justify-center relative p-12 overflow-hidden" @click="mediaPreviewVisible = false">
-        <div class="max-w-7xl w-full max-h-[85vh] rounded-4xl overflow-hidden shadow-profound border border-white/10 relative group" @click.stop>
-          <video v-if="previewItem?.mediaType === 2" :src="previewItem.mediaUrl" controls autoplay class="w-full h-auto bg-black"></video>
-          <img v-else-if="previewItem?.mediaType === 1" :src="previewItem.mediaUrl" class="w-full h-auto object-contain bg-black/20" />
-          
-          <button @click="mediaPreviewVisible = false" 
-                  class="absolute top-6 right-6 p-4 bg-white/10 hover:bg-white/20 backdrop-blur-2xl rounded-full text-white transition-all z-50 border border-white/10">
+    <el-dialog v-model="mediaPreviewVisible" width="100%" fullscreen destroy-on-close align-center append-to-body
+      modal-class="media-preview-overlay" class="media-preview-dialog custom-glass-dialog">
+      <div class="h-screen w-screen bg-transparent flex items-center justify-center relative p-12 overflow-hidden"
+        @click="mediaPreviewVisible = false">
+        <div
+          class="max-w-7xl w-full max-h-[85vh] rounded-4xl overflow-hidden shadow-profound border border-white/10 relative group"
+          @click.stop>
+          <video v-if="previewItem?.mediaType === 2" :src="previewItem.mediaUrl" controls autoplay
+            class="w-full h-auto bg-black"></video>
+          <img v-else-if="previewItem?.mediaType === 1" :src="previewItem.mediaUrl"
+            class="w-full h-auto object-contain bg-black/20" />
+
+          <button @click="mediaPreviewVisible = false"
+            class="absolute top-6 right-6 p-4 bg-white/10 hover:bg-white/20 backdrop-blur-2xl rounded-full text-white transition-all z-50 border border-white/10">
             <X :size="28" />
           </button>
         </div>
@@ -321,11 +385,12 @@
 </template>
 
 <script setup>
-import { 
-  Eye, Download, Star, Telescope, Puzzle, Cpu, MessageCircleQuestion, 
+import {
+  Eye, Download, Star, Telescope, Puzzle, Cpu, MessageCircleQuestion,
   CheckCircle, Smartphone, Check, Zap, UserCheck, X, ShieldCheck, Lock, CheckCircle2, ArrowRight,
   MonitorDot, Code2, BookOpen, Video, Image, MessageCircle, VideoOff, Database, PlayCircle, Maximize2,
-  MessageSquareOff, MessageCirclePlus
+  MessageSquareOff, MessageCirclePlus, Layout, Palette, Settings, Search, Folder, FileText, ChevronRight,
+  AlertCircle
 } from 'lucide-vue-next'
 import { MdPreview } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
@@ -350,11 +415,18 @@ onMounted(async () => {
   }
 })
 
-// Fetch similar projects
-const recRes = project.value?.categoryId ? await useAsyncData(`similar-${route.params.id}`, () => 
-  api('/api/projects', { params: { categoryId: project.value?.categoryId, pageSize: 3 } })
-) : { data: ref(null) }
-const similarProjects = computed(() => recRes.value?.data?.records?.filter(p => p.id !== project.value?.id).slice(0, 2) || [])
+// Fetch hottest projects (Most Viewed) with improved error handling and dynamic key
+const { data: recommendedData } = await useAsyncData(
+  `hottest-projects-${route.params.id}`,
+  () => api('/api/projects', { params: { pageSize: 6, sort: 'views' } }),
+  { default: () => ({ data: { records: [] } }) }
+)
+
+const similarProjects = computed(() => {
+  const records = recommendedData.value?.data?.records || []
+  // Filter out current project and keep top 2
+  return records.filter(p => p.id != route.params.id).slice(0, 2)
+})
 
 const techTags = computed(() => project.value?.techStack?.split(',') || ['Academic Excellence', 'Cloud Native'])
 
@@ -365,9 +437,9 @@ const mediaItems = computed(() => {
   const results = [...videos, ...images]
   // Fallback to cover image if no media available
   if (results.length === 0) {
-    results.push({ 
-      mediaType: 1, 
-      mediaUrl: project.value.coverImage || 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop' 
+    results.push({
+      mediaType: 1,
+      mediaUrl: project.value.coverImage || 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop'
     })
   }
   return results
@@ -376,6 +448,7 @@ const mediaItems = computed(() => {
 const tabOptions = computed(() => [
   { id: 'overview', label: '项目总览', icon: Telescope },
   { id: 'detail', label: '项目详情', icon: BookOpen },
+  { id: 'notes', label: '注意事项', icon: AlertCircle, show: !!project.value?.notes },
   { id: 'ask', label: '在线咨询', icon: MessageCircleQuestion }
 ])
 
@@ -474,12 +547,32 @@ const submitConsultation = async () => {
   }
 }
 
-const serviceFeatures = [
-  { icon: MonitorDot, title: '1-on-1 真人演示', desc: '购买后可预约远程演示，讲解项目架构与核心链路。' },
-  { icon: Code2, title: '全套环境搭建', desc: '提供全套环境包及自动部署脚本。' },
-  { icon: BookOpen, title: '高分论文参考', desc: '涵盖架构设计与算法说明的高质量文档。' },
-  { icon: Zap, title: '工业级验证', desc: '核心算法已通过压力测试，代码规范。' }
-]
+const iconMap = {
+  MonitorDot, Code2, BookOpen, Zap, Cpu, Database, Puzzle, ShieldCheck, MessageCircleQuestion, CheckCircle2,
+  Smartphone, Video, Layout, Palette, Settings, Search
+}
+
+const serviceFeatures = computed(() => {
+  if (project.value?.serviceFeatures) {
+    try {
+      const parsed = JSON.parse(project.value.serviceFeatures)
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.map(feat => ({
+          ...feat,
+          icon: iconMap[feat.icon] || Zap
+        }))
+      }
+    } catch (e) {
+      console.error('Failed to parse serviceFeatures', e)
+    }
+  }
+  return [
+    { icon: MonitorDot, title: '1-on-1 真人演示', desc: '购买后可预约远程演示，讲解项目架构与核心链路。' },
+    { icon: Code2, title: '全套环境搭建', desc: '提供全套环境包及自动部署脚本。' },
+    { icon: BookOpen, title: '高分论文参考', desc: '涵盖架构设计与算法说明的高质量文档。' },
+    { icon: Zap, title: '工业级验证', desc: '核心算法已通过压力测试，代码规范。' }
+  ]
+})
 
 const functionalModules = [
   '精细化权限管理系统',
@@ -506,10 +599,10 @@ const handleContact = () => {
 
 const handleDownload = () => {
   if (!project.value?.downloadUrl) return
-  
+
   const fileName = project.value.downloadUrl.substring(project.value.downloadUrl.lastIndexOf('/') + 1)
   performTurboDownload(project.value.downloadUrl, fileName)
-  
+
   ElNotification({
     title: '开始极速下载',
     message: '下载任务已由全局系统接管。您可以离开当前页面，下载将在后台继续进行。',
@@ -518,6 +611,51 @@ const handleDownload = () => {
     offset: 80
   })
 }
+
+const resourceTree = computed(() => {
+  if (project.value?.resourceContents) {
+    try {
+      return JSON.parse(project.value.resourceContents)
+    } catch (e) {
+      console.error('Failed to parse resourceContents', e)
+    }
+  }
+  return []
+})
+
+// Recursive Tree Node Component (Local)
+const ResourceTreeNode = defineComponent({
+  name: 'ResourceTreeNode',
+  props: {
+    node: { type: Object, required: true },
+    depth: { type: Number, default: 0 }
+  },
+  setup(props) {
+    const isOpen = ref(true)
+    const hasChildren = computed(() => props.node.children && props.node.children.length > 0)
+
+    return () => h('div', { class: 'tree-node-wrapper' }, [
+      h('div', {
+        class: `flex items-center gap-2 py-2 group cursor-pointer transition-colors hover:text-primary`,
+        style: { paddingLeft: `${props.depth * 20}px` },
+        onClick: () => { if (hasChildren.value) isOpen.value = !isOpen.value }
+      }, [
+        h(hasChildren.value ? Folder : FileText, {
+          size: 14,
+          class: hasChildren.value ? 'text-amber-400' : 'text-slate-400'
+        }),
+        h('span', { class: 'text-xs font-bold text-slate-600 group-hover:text-primary' }, props.node.label),
+        hasChildren.value ? h(ChevronRight, {
+          size: 12,
+          class: `ml-auto text-slate-300 transition-transform ${isOpen.value ? 'rotate-90' : ''}`
+        }) : null
+      ]),
+      (hasChildren.value && isOpen.value) ? h('div', { class: 'node-children animate-fade-in' },
+        props.node.children.map(child => h(ResourceTreeNode, { node: child, depth: props.depth + 1 }))
+      ) : null
+    ])
+  }
+})
 </script>
 
 
@@ -535,7 +673,8 @@ const handleDownload = () => {
   backdrop-filter: none;
   border: none;
   color: white !important;
-  font-size: 48px; /* Bigger arrow for better visibility */
+  font-size: 48px;
+  /* Bigger arrow for better visibility */
   transition: opacity 0.3s;
   box-shadow: none;
   opacity: 0.6;
@@ -550,7 +689,8 @@ const handleDownload = () => {
 /* Global styles for the media preview dialog overlay to ensure frosted glass effect */
 .el-overlay.media-preview-overlay {
   z-index: 9999 !important;
-  background-color: rgba(0, 0, 0, 0.6) !important; /* Pure black tint for better contrast */
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  /* Pure black tint for better contrast */
   backdrop-filter: blur(40px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
 }

@@ -43,6 +43,8 @@ public class Project implements Serializable {
     private String major;
     private String downloadUrl;
     private Integer sortOrder;
+    private String serviceFeatures;
+    private String resourceContents;
     @TableField(exist = false)
     private java.util.List<ProjectMedia> medias;
 
@@ -57,6 +59,7 @@ public class Project implements Serializable {
 
     private Date createTime;
     private Date updateTime;
+    private String notes;
     private Integer isDeleted;
 
 }
