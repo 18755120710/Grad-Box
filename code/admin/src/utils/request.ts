@@ -38,6 +38,9 @@ service.interceptors.response.use(
         }
     },
     (error) => {
+        if (axios.isCancel(error)) {
+            return Promise.reject(error)
+        }
         if (error.response && error.response.status === 401) {
             const authStore = useAuthStore()
             authStore.logout()
