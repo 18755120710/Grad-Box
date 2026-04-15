@@ -65,6 +65,17 @@
                 </el-input>
               </div>
             </div>
+
+            <div class="notes-area-v3">
+              <div class="notes-header">
+                <lucide-alert-circle :size="14" class="notes-icon" />
+                <span class="notes-label">注意事项</span>
+              </div>
+              <el-form-item prop="notes" class="no-label-item">
+                <el-input v-model="form.notes" type="textarea" :rows="3"
+                  placeholder="录入该项目的特定交付说明、环境要求或版本避坑指南..." class="notes-input-v3" />
+              </el-form-item>
+            </div>
           </el-form>
         </section>
 
@@ -583,6 +594,7 @@ const form = reactive({
   id: route.params.id === 'new' ? undefined : Number(route.params.id),
   title: '',
   description: '',
+  notes: '',
   type: '',
   categoryId: null,
   techStack: '',
@@ -1652,6 +1664,57 @@ const LucidePlus = (props: any) => h('svg', { ...props, 'xmlns': 'http://www.w3.
 .tech-icon-box {
   color: var(--admin-primary);
   opacity: 0.6;
+}
+
+.notes-area-v3 {
+  margin-top: 32px;
+  padding: 20px;
+  background: var(--admin-surface-light);
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.notes-area-v3:focus-within {
+  border-color: var(--admin-warning);
+  background: var(--admin-surface);
+  box-shadow: 0 8px 24px rgba(var(--el-color-warning-rgb), 0.05);
+}
+
+.notes-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.notes-icon {
+  color: var(--admin-warning);
+}
+
+.notes-label {
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--admin-text-secondary);
+  letter-spacing: 0.5px;
+}
+
+.notes-input-v3 :deep(.el-textarea__inner) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--admin-text-main);
+  padding: 0;
+  resize: none;
+}
+
+.notes-input-v3 :deep(.el-textarea__inner::placeholder) {
+  color: var(--admin-text-muted);
+  font-weight: 400;
 }
 
 /* --- Documentation Section --- */
