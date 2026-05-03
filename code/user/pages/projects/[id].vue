@@ -598,6 +598,11 @@ const handleContact = () => {
 }
 
 const handleDownload = () => {
+  if (!authStore.isLoggedIn) {
+    ElMessage.warning('请先登录后再进行资源下载')
+    return
+  }
+
   if (!project.value?.downloadUrl) return
 
   const fileName = project.value.downloadUrl.substring(project.value.downloadUrl.lastIndexOf('/') + 1)
